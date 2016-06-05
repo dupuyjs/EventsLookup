@@ -46,10 +46,20 @@ namespace MeetupLibrary
 
             var response = await InvokeWebOperationWithRetry<HttpResponseMessage>( async () =>
                 {
+                    IEnumerable<string> headers = null;
                     var httpResponse = await httpClient.GetAsync(uri);
 
-                    xRateLimitRemaining = int.Parse(httpResponse.Headers.GetValues("X-RateLimit-Remaining").First());
-                    Debug.WriteLine(string.Format("X-RateLimit-Remaining: {0}", xRateLimitRemaining.ToString()));
+                    if (httpResponse.Headers.TryGetValues("X-RateLimit-Remaining", out headers))
+                    {
+                        xRateLimitRemaining = int.Parse(headers.First());
+                        Debug.WriteLine(string.Format("X-RateLimit-Remaining: {0}", xRateLimitRemaining.ToString()));
+                    }
+
+                    if (httpResponse.Headers.TryGetValues("X-Total-Count", out headers))
+                    {
+                        var xTotalCount = int.Parse(headers.First());
+                        Debug.WriteLine(string.Format("X-Total-Count: {0}", xTotalCount.ToString()));
+                    }
 
                     httpResponse.EnsureSuccessStatusCode();
                     return httpResponse;                    

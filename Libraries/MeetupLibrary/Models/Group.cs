@@ -1,13 +1,15 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MeetupLibrary.Models
 {
-    public class Group
+    public class Group : INotifyPropertyChanged
     {
         [JsonProperty("score")]
         public double Score { get; set; }
@@ -57,5 +59,51 @@ namespace MeetupLibrary.Models
         public Category Category { get; set; }
         [JsonProperty("photos")]
         public List<Photo> Photos { get; set; }
+
+        private List<Event> _allEvents = null;
+        public List<Event> AllEvents {
+            get
+            {
+                return _allEvents;
+            }
+            set
+            {
+                _allEvents = value;
+                NotifyPropertyChanged("AllEvents");
+                NotifyPropertyChanged("EventsCount");
+            }
+        }
+
+        public int EventsCount
+        {
+            get
+            {
+                return _allEvents?.Count ?? 0;
+            }
+        }
+
+        private bool _isEventsVisible = false;
+        public bool IsEventsVisible
+        {
+            get
+            {
+                return _isEventsVisible;
+            }
+            set
+            {
+                _isEventsVisible = value;
+                NotifyPropertyChanged("IsEventsVisible");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
 }

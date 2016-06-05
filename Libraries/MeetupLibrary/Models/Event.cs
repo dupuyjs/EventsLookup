@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using MeetupLibrary.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 
 namespace MeetupLibrary.Models
 {
@@ -33,7 +36,8 @@ namespace MeetupLibrary.Models
         [JsonProperty("id")]
         public string Id { get; set; }
         [JsonProperty("time")]
-        public object Time { get; set; }
+        [JsonConverter(typeof(MicrosecondEpochConverter))]
+        public DateTime Time { get; set; }
         [JsonProperty("updated")]
         public object Updated { get; set; }
         [JsonProperty("group")]
@@ -46,3 +50,5 @@ namespace MeetupLibrary.Models
         public string HowToFindUs { get; set; }
     }
 }
+
+

@@ -18,19 +18,17 @@ namespace MeetupLibrary
             this._apikey = apiKey;
         }
 
-        public async Task<CitiesResponse> GetCities(double latitude, double longitude, int radius = 50)
+        public async Task<CitiesResponse> GetCities(string country = "fr")
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("latitude", latitude.ToString());
-            parameters.Add("longitude", longitude.ToString());
-            parameters.Add("radius", radius.ToString());
+            parameters.Add("country", country.ToString());
 
-            var template = new UriTemplate("/2/cities?lat={latitude}&lon={longitude}&radius={radius}");
+            var template = new UriTemplate("/2/cities?country={country}&order=size&page=50");
 
             return await GetWithRetryAsync<CitiesResponse>(_hostUri, template, parameters);
         }
 
-        public async Task<EventsResponse> GetEvents(string query, string zip, int? category, string country = "FR")
+        public async Task<EventsResponse> GetEvents(string query, string zip, int? category, string country = "fr")
         {
             var parameters = new Dictionary<string, string>();
             parameters.Add("apikey", _apikey);
@@ -55,7 +53,7 @@ namespace MeetupLibrary
             return await GetWithRetryAsync<CategoriesResponse>(_hostUri, template, parameters);
         }
 
-        public async Task<List<Group>> GetGroups(int topicId, string zip, int? category, string country = "FR")
+        public async Task<List<Group>> GetGroups(int topicId, string zip, int? category, bool upcomingOnly, string ordering = "most_active", string country = "fr")
         {
             var parameters = new Dictionary<string, string>();
             parameters.Add("apikey", _apikey);
@@ -63,11 +61,24 @@ namespace MeetupLibrary
             parameters.Add("topicid", topicId.ToString());
             if (!string.IsNullOrEmpty(zip)) parameters.Add("zip", zip);
             if (!string.IsNullOrEmpty(country)) parameters.Add("country", country);
+            if (!string.IsNullOrEmpty(ordering)) parameters.Add("ordering", ordering);
             if (category.HasValue) parameters.Add("category", category.ToString());
+            parameters.Add("upcomingonly", upcomingOnly.ToString());
 
-            var template = new UriTemplate("/find/groups?key={apikey}&topic_id={topicid}&zip={zip}&category={category}&country={country}&sign=true");
+            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=50&sign=true");
 
             return await GetWithRetryAsync<List<Group>>(_hostUri, template, parameters);
+        }
+
+        public async Task<EventsResponse> GetEvents(int groupId)
+        {
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("apikey", _apikey);
+            parameters.Add("groupId", groupId.ToString());
+
+            var template = new UriTemplate("/2/events?key={apikey}&group_id={groupId}&sign=true");
+
+            return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }
 
         public async Task<List<Topic>> GetTopics(string query, string lang = "en-US")

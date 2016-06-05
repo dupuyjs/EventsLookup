@@ -107,6 +107,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\MicrosecondEpochConverter.cs" />
     <Compile Include="Helpers\UriTemplate.cs" />
     <Compile Include="IMeetupClient.cs" />
     <Compile Include="MeetupClient.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\Meta.cs" />
     <Compile Include="Models\City.cs" />
+    <Compile Include="Models\Ordering.cs" />
     <Compile Include="Models\Organizer.cs" />
     <Compile Include="Models\Photo.cs" />
     <Compile Include="Models\Topic.cs" />
