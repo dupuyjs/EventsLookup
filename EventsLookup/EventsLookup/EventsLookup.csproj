@@ -218,11 +218,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\MeetupLibrary\MeetupLibrary.csproj">
-      <Project>{fa776de4-c1e1-48d5-88df-b8dfc0d86fa0}</Project>
+      <Project>{8d36bd90-1b09-4009-beba-34d3c0b0dcba}</Project>
       <Name>MeetupLibrary</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using MeetupLibrary.Helpers;
-//using Windows.Web.Http.Filters;
+using Windows.Web.Http.Filters;
 
 namespace MeetupLibrary
 {
     public class SimpleServiceClient : IDisposable
     {
-        //private HttpBaseProtocolFilter filter;
+        private HttpBaseProtocolFilter filter;
         private HttpClient httpClient;
         CancellationTokenSource cts;
 
@@ -22,7 +22,7 @@ namespace MeetupLibrary
 
         public SimpleServiceClient()
         {
-            //filter = new HttpBaseProtocolFilter();
+            filter = new HttpBaseProtocolFilter();
             httpClient = new HttpClient();
             cts = new CancellationTokenSource();
         }
@@ -126,11 +126,11 @@ namespace MeetupLibrary
 
         public void Dispose()
         {
-            //if (filter != null)
-            //{
-            //    filter.Dispose();
-            //    filter = null;
-            //}
+            if (filter != null)
+            {
+                filter.Dispose();
+                filter = null;
+            }
 
             if (httpClient != null)
             {

@@ -46,7 +46,7 @@ namespace EventsLookup.ViewModels
         {
             get
             {
-                return this._meetupProxy;
+                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey));
             }
         }
 
@@ -298,8 +298,6 @@ namespace EventsLookup.ViewModels
 
         public MeetupViewModel()
         {
-            _meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey);
-
             Task.Run(() => Initialize());
         }
 
