@@ -28,7 +28,13 @@
         <Setter Property="FontSize" Value="28"/>
         <Setter Property="FontFamily" Value="ms-appx:/Resources/Fonts/TCB_____.TTF#Tw Cen MT"/>
         <Setter Property="Margin" Value="16,32,0,18"/>
-        <!--<Setter Property="Margin" Value="16,48,0,36"/>-->
+    </Style>
+
+    <Style TargetType="TextBlock" x:Key="ThemeTopicStyle">
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="29"/>
+        <Setter Property="FontFamily" Value="ms-appx:/Resources/Fonts/TCB_____.TTF#Tw Cen MT"/>
+        <Setter Property="Foreground" Value="{ThemeResource ThemeRedHigh1ColorBrush}"/>
     </Style>
 
     <Style TargetType="TextBlock" x:Key="ThemeGroupTitleStyle">

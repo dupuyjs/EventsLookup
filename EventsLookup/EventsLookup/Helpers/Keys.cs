@@ -2,6 +2,6 @@
 {
     public static class Keys
     {
-        public const string MeetupApiKey = @"";
+        public const string MeetupApiKey = @"YourMeetupAPIKey";
     }
 }

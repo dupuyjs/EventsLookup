@@ -62,13 +62,13 @@ namespace EventsLookup
                 {
                     //TODO: Load state from previously suspended application
                 }
-
-                // Place the frame in the current Window
-                Window.Current.Content = new ShellPage(rootFrame);
             }
 
             if (e.PrelaunchActivated == false)
             {
+                // Place the frame in the current Window
+                Window.Current.Content = new ShellPage(rootFrame);
+
                 if (rootFrame.Content == null)
                 {
                     // When the navigation stack isn't restored navigate to the first page,

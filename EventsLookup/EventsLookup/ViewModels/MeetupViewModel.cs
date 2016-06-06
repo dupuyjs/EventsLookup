@@ -1,4 +1,5 @@
 ﻿using EventsLookup.Helpers;
+using EventsLookup.Models;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Threading;
 using GalaSoft.MvvmLight.Views;
@@ -197,6 +198,43 @@ namespace EventsLookup.ViewModels
             }
         }
 
+        private List<Favorite> _favorites = null;
+        public List<Favorite> Favorites
+        {
+            get
+            {
+                return _favorites;
+            }
+            set
+            {
+                _favorites = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => Favorites);
+                });
+            }
+        }
+
+        Favorite _selectedFavorite = null;
+        public Favorite SelectedFavorite
+        {
+            get
+            {
+                return _selectedFavorite;
+            }
+            set
+            {
+                if (_selectedFavorite != value)
+                {
+                    _selectedFavorite = value;
+                    DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                    {
+                        RaisePropertyChanged(() => SelectedFavorite);
+                    });
+                }
+            }
+        }
+
         private bool? _upcoming = false;
         public bool? Upcoming
         {
@@ -271,6 +309,8 @@ namespace EventsLookup.ViewModels
         {
             try
             {
+                this.Favorites = Favorite.GetDefaultTopics();
+
                 var cities = await MeetupProxy.GetCities();
                 this.Cities = cities.Results;
 
@@ -284,14 +324,8 @@ namespace EventsLookup.ViewModels
                 this.SelectedCategory = 34;
                 this.SelectedOrdering = "most_active";
 
-                //var groups = await MeetupProxy.GetGroups(21441, "meetup1", 34, true, "most_active");
-                //this.Groups = groups;
+                this.SelectedFavorite = this.Favorites.First();
 
-                //foreach(var item in Groups)
-                //{
-                //    var events = await MeetupProxy.GetEvents(item.Id);
-                //    item.AllEvents = events.Results;
-                //}
             }
             catch (Exception)
             {
@@ -305,13 +339,6 @@ namespace EventsLookup.ViewModels
         #endregion
 
         #region Get Topics
-
-        //private async void OnKeywordsQuery(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        //{
-        //    var query = tbKeywords.Text;
-        //    await Default.GetTopics(query);
-        //    cbTopics.SelectedItem = Default.Topics.First();
-        //}
 
         public async void OnKeywordsQuery(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
@@ -330,6 +357,42 @@ namespace EventsLookup.ViewModels
 
         #endregion
 
+        public async Task<bool> GetGroups(int topicId, string zip, int categoryId, bool upcomingOnly, string ordering)
+        {
+            try
+            {
+                var groups = await MeetupProxy.GetGroups(topicId, zip, categoryId, upcomingOnly, ordering);
+                this.Groups = groups;
+                this.GroupsNumber = groups.Count();
+
+                foreach (var item in Groups)
+                {
+                    if (item.NextEvent != null)
+                    {
+                        var events = await MeetupProxy.GetEvents(item.Id);
+                        item.AllEvents = events.Results;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                var loader = new ResourceLoader("Errors");
+                DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
+            }
+
+            return true;
+        }
+
+        public async void OnFavoriteChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var favorite = this.SelectedFavorite;
+            var zip = this.SelectedCity;
+            var ordering = this.SelectedOrdering;
+            var upcomingOnly = this.Upcoming.Value;
+
+            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, upcomingOnly, ordering);
+        }
+
         public async void OnSubmit(object sender, RoutedEventArgs e)
         {
             var category = this.SelectedCategory;
@@ -338,23 +401,7 @@ namespace EventsLookup.ViewModels
             var topicId = this.SelectedTopic;
             var upcomingOnly = this.Upcoming.Value;
 
-            try
-            {
-                var groups = await MeetupProxy.GetGroups(topicId, zip, category, upcomingOnly, ordering);
-                this.Groups = groups;
-                this.GroupsNumber = groups.Count();
-
-                foreach (var item in Groups)
-                {
-                    var events = await MeetupProxy.GetEvents(item.Id);
-                    item.AllEvents = events.Results;
-                }
-            }
-            catch (Exception)
-            {
-                var loader = new ResourceLoader("Errors");
-                DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
-            }
+            await GetGroups(topicId, zip, category, upcomingOnly, ordering);
         }
     }
 }

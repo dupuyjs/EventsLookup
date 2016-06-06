@@ -5,6 +5,7 @@
     xmlns:local="using:EventsLookup.Views"
     xmlns:conv="using:EventsLookup.Converters"
     xmlns:models="using:MeetupLibrary.Models"
+    xmlns:fav="using:EventsLookup.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     RequestedTheme="Dark"
@@ -15,6 +16,7 @@
         <conv:IntegerConverter x:Key="IntegerConverter"/>
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <conv:FavoriteConverter x:Key="FavoriteConverter"/>
 
         <Style TargetType="ListViewItem" x:Key="ListViewItemGroupStyle">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -43,6 +45,25 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style TargetType="ListViewItem" x:Key="ListViewItemTopicStyle">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <Storyboard x:Name="OpenSearch">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)" Storyboard.TargetName="AddTopic">
+                <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="0"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Name="CloseSearch">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)" Storyboard.TargetName="AddTopic">
+                <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="-320"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -97,15 +118,33 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <ListView x:Name="topicsList">
+                <ListView x:Name="favoritesList" 
+                          ItemsSource="{x:Bind Default.Favorites, Mode=OneWay}"
+                          SelectedItem="{x:Bind Default.SelectedFavorite, Mode=TwoWay, Converter={StaticResource FavoriteConverter}}"
+                          SelectionChanged="{x:Bind Default.OnFavoriteChanged}"
+                          ItemContainerStyle="{StaticResource ListViewItemTopicStyle}">
+                    <ListView.Projection>
+                        <PlaneProjection/>
+                    </ListView.Projection>
                     <ListView.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="TOPICS" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}"/>
+                            <TextBlock Text="TOPICS" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}" Margin="16,32,0,26"/>
                         </DataTemplate>
                     </ListView.HeaderTemplate>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="fav:Favorite">
+                            <Grid Margin="18,4">
+                                <TextBlock Text="{x:Bind DisplayName}" Style="{ThemeResource ThemeTopicStyle}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
                 </ListView>
-                <Grid x:Name="AddTopic">
+                <Grid x:Name="AddTopic" Background="{ThemeResource ThemeGrayLow1ColorBrush}" Height="846" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <CompositeTransform TranslateX="-320"/>
+                    </Grid.RenderTransform>
                     <StackPanel>
+                        <TextBlock Text="SEARCH" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}"/>
                         <ComboBox x:Name="cbCities" 
                             ItemsSource="{x:Bind Default.Cities, Mode=OneWay}"
                             DisplayMemberPath="CityName" 
@@ -152,7 +191,7 @@
                         <Button x:Name="btnSubmit" 
                         Grid.Row="3"
                         HorizontalAlignment="Stretch"
-                        Background="{StaticResource ThemeBlueColorBrush}"
+                        Background="{StaticResource ThemeredHigh2ColorBrush}"
                         RequestedTheme="Dark"
                         Content="Submit"
                         Margin="12,6"
@@ -160,7 +199,7 @@
                     </StackPanel>
                 </Grid>
                 <CommandBar Grid.Row="1">
-                    <AppBarButton Icon="Add"/>
+                    <AppBarButton Icon="Add" Click="OnAddTopic"/>
                     <AppBarButton Icon="Delete"/>
                 </CommandBar>
             </Grid>
@@ -223,49 +262,59 @@
                                         <Ellipse Fill="{ThemeResource ThemeRedHigh1ColorBrush}"/>
                                         <TextBlock Text="{x:Bind EventsCount, Mode=OneWay}" Style="{StaticResource ThemeGroupCircleStyle}"/>
                                     </Grid>
-                                    <ListView Grid.Row="1" Grid.ColumnSpan="3" 
-                                              ItemsSource="{x:Bind AllEvents, Mode=OneWay}" 
-                                              Margin="48,24,0,24" 
-                                              ItemContainerStyle="{StaticResource ListViewItemEventStyle}"
-                                              Visibility="{x:Bind IsEventsVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="models:Event">
-                                                <Border Background="White" CornerRadius="8" Padding="8">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="240"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource ThemeEventTitleStyle}" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
-                                                        <StackPanel Grid.Column="1">
-                                                            <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:D\}}" Style="{StaticResource ThemeEventTitleStyle}"/>
-                                                            <TextBlock Text="{x:Bind Venue.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="{x:Bind YesRsvpCount}" Style="{StaticResource ThemeEventSubTitleStyle}" FontWeight="Bold" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}" IsTextScaleFactorEnabled="False"/>
-                                                                <TextBlock Text=" registered" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                    <Grid Grid.Row="1" Grid.ColumnSpan="3">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <!--<WebView Source="{x:Bind Description}" Grid.Row="0" Margin="0,8"/>-->
+                                        <ListView x:Name="groupMeetupList"
+                                                  Grid.Row="1"
+                                                  Margin="48,8,0,24"
+                                                  ItemsSource="{x:Bind AllEvents, Mode=OneWay}" 
+                                                  ItemContainerStyle="{StaticResource ListViewItemEventStyle}"
+                                                  Visibility="{x:Bind IsEventsVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="models:Event">
+                                                    <Border Background="White" CornerRadius="8" Padding="8">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="240"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="{x:Bind Name}" Style="{StaticResource ThemeEventTitleStyle}" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Grid.Column="1">
+                                                                <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:D\}}" Style="{StaticResource ThemeEventTitleStyle}"/>
+                                                                <TextBlock Text="{x:Bind Venue.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{x:Bind YesRsvpCount}" Style="{StaticResource ThemeEventSubTitleStyle}" FontWeight="Bold" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}" IsTextScaleFactorEnabled="False"/>
+                                                                    <TextBlock Text=" registered" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                                                </StackPanel>
                                                             </StackPanel>
-                                                        </StackPanel>
-                                                        <StackPanel Orientation="Horizontal" Grid.Column="2">
-                                                            <Image Source="ms-appx:///Assets/Commons/Follow.png" Height="30" Width="30" Margin="8,0"/>
-                                                            <Image Source="ms-appx:///Assets/Commons/Calendar.png" Height="30" Width="30"/>
-                                                        </StackPanel>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <VirtualizingStackPanel>
-                                                    <VirtualizingStackPanel.ChildrenTransitions>
-                                                        <TransitionCollection>
-                                                            <EntranceThemeTransition FromHorizontalOffset="400" />
-                                                        </TransitionCollection>
-                                                    </VirtualizingStackPanel.ChildrenTransitions>
-                                                </VirtualizingStackPanel>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ListView>
+                                                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                                                <HyperlinkButton Margin="8,0" NavigateUri="{x:Bind EventUrl}">
+                                                                    <Image Source="ms-appx:///Assets/Commons/Follow.png" Height="30" Width="30"/>
+                                                                </HyperlinkButton>
+                                                                <Image Source="ms-appx:///Assets/Commons/Calendar.png" Height="30" Width="30" Margin="8,4" Tapped="OnAddCalendar"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VirtualizingStackPanel>
+                                                        <VirtualizingStackPanel.ChildrenTransitions>
+                                                            <TransitionCollection>
+                                                                <EntranceThemeTransition FromHorizontalOffset="400" />
+                                                            </TransitionCollection>
+                                                        </VirtualizingStackPanel.ChildrenTransitions>
+                                                    </VirtualizingStackPanel>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ListView>
+                                    </Grid>
                                 </Grid>
                             </Border>
                             <!--<Grid x:Name="infoMeetup" Grid.Column="1" Visibility="{x:Bind NextEvent, Converter={StaticResource NullToVisibilityConverter}}">
