@@ -16,12 +16,12 @@ using GalaSoft.MvvmLight.Threading;
 using MeetupLibrary;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using HockeyApp;
 
 namespace EventsLookup.Android.ViewModels
 {
     public class MeetupViewModel : ViewModelBase
     {
-
         public async Task InitAsync()
         {
             if (Groups != null)
@@ -124,9 +124,10 @@ namespace EventsLookup.Android.ViewModels
             {
                 return _incrementCommand
                     ?? (_incrementCommand = new RelayCommand(
-                    async () =>
+                    () =>
                     {
-                        await this.GetGroups(21441, "meetup1", 34, false, "most_active");
+   
+                        //await this.GetGroups(21441, "meetup1", 34, false, "most_active");
                         //Hello = string.Format("Hello! {0} click(s)", ++_index);
                     }));
             }

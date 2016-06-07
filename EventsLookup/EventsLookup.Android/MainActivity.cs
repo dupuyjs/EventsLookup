@@ -8,6 +8,7 @@ using Android.OS;
 using EventsLookup.Android.ViewModels;
 using GalaSoft.MvvmLight.Helpers;
 using MeetupLibrary.Models;
+using HockeyApp;
 
 namespace EventsLookup.Android
 {
@@ -48,6 +49,8 @@ namespace EventsLookup.Android
         {
             base.OnCreate(bundle);
 
+            CrashManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
+
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
@@ -55,9 +58,16 @@ namespace EventsLookup.Android
 
             ListViewMeetup.Adapter = Vm.Groups.GetAdapter(GetMeetupView);
 
-            MyButton.SetCommand(
-                "Click",
-                Vm.IncrementCommand);
+            //MyButton.SetCommand(
+            //    "Click",
+            //    Vm.IncrementCommand);
+
+            FeedbackManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
+
+
+            MyButton.Click += delegate {
+                FeedbackManager.ShowFeedbackActivity(ApplicationContext);
+            };
         }
 
 
