@@ -68,18 +68,47 @@ namespace EventsLookup.Android
             MyButton.Click += delegate {
                 FeedbackManager.ShowFeedbackActivity(ApplicationContext);
             };
+            CheckForUpdates();
         }
 
+        void CheckForUpdates()
+        {
+            // Remove this for store builds!
+            UpdateManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
+        }
+
+        void UnregisterManagers()
+        {
+            UpdateManager.Unregister();
+        }
+
+        protected override void OnPause()
+        {
+            base.OnPause();
+
+            UnregisterManagers();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            UnregisterManagers();
+        }
 
         private View GetMeetupView(int position, Group group, View convertView)
         {
             View view = convertView ?? LayoutInflater.Inflate(Resource.Layout.RowGroup, null);
 
-            var firstName = view.FindViewById<TextView>(Resource.Id.FirstName);
-            var lastName = view.FindViewById<TextView>(Resource.Id.LastName);
+            var name = view.FindViewById<TextView>(Resource.Id.Name);
+            var city = view.FindViewById<TextView>(Resource.Id.City);
+            var members = view.FindViewById<TextView>(Resource.Id.Members);
+            var organizer = view.FindViewById<TextView>(Resource.Id.Organizer);
 
-            firstName.Text = group.Name;
-            lastName.Text = group.City;
+            name.Text = group.Name;
+            city.Text = group.City;
+            members.Text = group.Members.ToString();
+            organizer.Text = group.Organizer.Name;
 
             return view;
         }
