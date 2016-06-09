@@ -70,12 +70,6 @@ namespace EventsLookup.Android
         {
             base.OnCreate(bundle);
 
-            #region HockeyApp Distribution
-
-            CheckForUpdates();
-
-            #endregion
-
             #region Feedback and Monitoring
 
             //HockeyApp.Metrics.MetricsManager.Register(this, Application, HOCKEY_APP_ID);
@@ -111,6 +105,12 @@ namespace EventsLookup.Android
             FeedbackButton.Click += delegate {
                 FeedbackManager.ShowFeedbackActivity(ApplicationContext);
             };
+
+            #region HockeyApp Distribution
+
+            CheckForUpdates();
+
+            #endregion
         }
 
         #region HockeyApp Distribution
