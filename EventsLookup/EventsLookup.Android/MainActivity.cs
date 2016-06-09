@@ -15,10 +15,9 @@ namespace EventsLookup.Android
     [Activity(Label = "EventsLookup.Android", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : Activity
     {
-        private MeetupViewModel _vm;
-        private Button _myButton;
-        private ListView _listViewMeetup;
+        private const string HOCKEY_APP_ID = "b4dba0f681c948999aa2e825e5690d11";
 
+        private MeetupViewModel _vm;
         public MeetupViewModel Vm
         {
             get
@@ -27,15 +26,37 @@ namespace EventsLookup.Android
             }
         }
 
-        public Button MyButton
+        private Button _feedbackButton;
+        public Button FeedbackButton
         {
             get
             {
-                return _myButton
-                    ?? (_myButton = FindViewById<Button>(Resource.Id.MyButton));
+                return _feedbackButton
+                    ?? (_feedbackButton = FindViewById<Button>(Resource.Id.FeedbackButton));
             }
         }
 
+        private Button _crashButton;
+        public Button CrashButton
+        {
+            get
+            {
+                return _crashButton
+                    ?? (_crashButton = FindViewById<Button>(Resource.Id.CrashButton));
+            }
+        }
+
+        private Button _helloButton;
+        public Button HelloButton
+        {
+            get
+            {
+                return _helloButton
+                    ?? (_helloButton = FindViewById<Button>(Resource.Id.HelloButton));
+            }
+        }
+
+        private ListView _listViewMeetup;
         public ListView ListViewMeetup
         {
             get
@@ -49,32 +70,54 @@ namespace EventsLookup.Android
         {
             base.OnCreate(bundle);
 
-            CrashManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
+            #region HockeyApp Distribution
+
+            CheckForUpdates();
+
+            #endregion
+
+            #region Feedback and Monitoring
+
+            //HockeyApp.Metrics.MetricsManager.Register(this, Application, HOCKEY_APP_ID);
+            //HockeyApp.Metrics.MetricsManager.TrackEvent("Started");
+
+            CrashManager.Register(this, HOCKEY_APP_ID);
+            FeedbackManager.Register(this, HOCKEY_APP_ID);
+
+            #endregion
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
             await Vm.InitAsync();
 
+            // Binding Solution 
+
+            this.SetBinding(
+                () => Vm.Hello,
+                () => HelloButton.Text);
+
+            HelloButton.SetCommand(
+                "Click",
+                Vm.IncrementCommand);
+
+            CrashButton.SetCommand(
+                "Click",
+                Vm.CrashCommand);
+
             ListViewMeetup.Adapter = Vm.Groups.GetAdapter(GetMeetupView);
 
-            //MyButton.SetCommand(
-            //    "Click",
-            //    Vm.IncrementCommand);
-
-            FeedbackManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
-
-
-            MyButton.Click += delegate {
+            // Traditional Handler
+            FeedbackButton.Click += delegate {
                 FeedbackManager.ShowFeedbackActivity(ApplicationContext);
             };
-            CheckForUpdates();
         }
+
+        #region HockeyApp Distribution
 
         void CheckForUpdates()
         {
-            // Remove this for store builds!
-            UpdateManager.Register(this, "b4dba0f681c948999aa2e825e5690d11");
+            UpdateManager.Register(this, HOCKEY_APP_ID);
         }
 
         void UnregisterManagers()
@@ -95,6 +138,8 @@ namespace EventsLookup.Android
 
             UnregisterManagers();
         }
+
+        #endregion
 
         private View GetMeetupView(int position, Group group, View convertView)
         {

@@ -2,12 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-    <Button
-        android:id="@+id/MyButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Send Feedback" />
+    android:layout_height="fill_parent"
+    android:columnCount="2">
+    <GridLayout
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/CrashButton"
+            android:text="Crash" />
+        <Button
+            android:id="@+id/FeedbackButton"
+            android:text="Send Feedback" />
+        <Button
+            android:id="@+id/HelloButton"
+            android:text="Hello" />
+    </GridLayout>
     <ListView
         android:minWidth="25px"
         android:minHeight="25px"

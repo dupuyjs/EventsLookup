@@ -22,11 +22,23 @@ namespace EventsLookup.Android.ViewModels
 {
     public class MeetupViewModel : ViewModelBase
     {
+        public ObservableCollection<Group> Groups { get; private set; }
+
+        private IMeetupClient _meetupProxy = null;
+        public IMeetupClient MeetupProxy
+        {
+            get
+            {
+                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient("5913182f503a73342030315a255b5b40"));
+            }
+        }
+
+        #region Initialisation
+
         public async Task InitAsync()
         {
             if (Groups != null)
             {
-                // Prevent memory leak in Android
                 var groupsCopy = Groups.ToList();
                 Groups = new ObservableCollection<Group>(groupsCopy);
                 return;
@@ -42,68 +54,28 @@ namespace EventsLookup.Android.ViewModels
             }
         }
 
-        public ObservableCollection<Group> Groups { get; private set; }
-
-        //}
-
-        //private List<Group> _groups = null;
-        //public List<Group> Groups
-        //{
-        //    get
-        //    {
-        //        return _groups;
-        //    }
-        //    set
-        //    {
-        //        _groups = value;
-        //        DispatcherHelper.CheckBeginInvokeOnUI(() =>
-        //        {
-        //            RaisePropertyChanged(() => Groups);
-        //        });
-        //    }
-        //}
-
-        private IMeetupClient _meetupProxy = null;
-        public IMeetupClient MeetupProxy
-        {
-            get
-            {
-                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient("5913182f503a73342030315a255b5b40"));
-            }
-        }
-
         public async Task<bool> GetGroups(int topicId, string zip, int categoryId, bool upcomingOnly, string ordering)
         {
             try
             {
                 var groups = await MeetupProxy.GetGroups(topicId, zip, categoryId, upcomingOnly, ordering);
                 this.Groups = new ObservableCollection<Group>(groups);
-                //this.GroupsNumber = groups.Count();
-
-                //foreach (var item in Groups)
-                //{
-                //    if (item.NextEvent != null)
-                //    {
-                //        var events = await MeetupProxy.GetEvents(item.Id);
-                //        item.AllEvents = events.Results;
-                //    }
-                //}
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //var loader = new ResourceLoader("Errors");
-                //DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
 
             return true;
         }
 
+        #endregion
+
+        #region Binding
+
         private int _index;
 
-        public const string HelloPropertyName = "Hello";
-
         private string _hello = "Hello!";
-
         public string Hello
         {
             get
@@ -117,7 +89,6 @@ namespace EventsLookup.Android.ViewModels
         }
 
         private RelayCommand _incrementCommand;
-
         public RelayCommand IncrementCommand
         {
             get
@@ -126,12 +97,25 @@ namespace EventsLookup.Android.ViewModels
                     ?? (_incrementCommand = new RelayCommand(
                     () =>
                     {
-   
-                        //await this.GetGroups(21441, "meetup1", 34, false, "most_active");
-                        //Hello = string.Format("Hello! {0} click(s)", ++_index);
+                        Hello = string.Format("{0} click(s)", ++_index);
                     }));
             }
         }
 
+        private RelayCommand _crashCommand;
+        public RelayCommand CrashCommand
+        {
+            get
+            {
+                return _crashCommand
+                    ?? (_crashCommand = new RelayCommand(
+                    () =>
+                    {
+                        throw new NotImplementedException();
+                    }));
+            }
+        }
+
+        #endregion
     }
 }
