@@ -42,7 +42,7 @@ namespace MeetupLibrary
             string jsonContent = string.Empty;
             T content = default(T);
 
-            if (xRateLimitRemaining < 5) await Task.Delay(2000);
+            if (xRateLimitRemaining < 10) await Task.Delay(2000);
 
             var response = await InvokeWebOperationWithRetry<HttpResponseMessage>( async () =>
                 {

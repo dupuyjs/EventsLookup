@@ -3,12 +3,14 @@ using MeetupLibrary.Models;
 using Microsoft.Practices.ServiceLocation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Security.Authentication.Web;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
@@ -30,6 +32,7 @@ namespace EventsLookup.Views
     public sealed partial class MeetupPage : Page
     {
         private bool IsSearchOpened = false;
+        private bool IsCalendarView = false;
 
         public MeetupViewModel Default
         {
@@ -44,7 +47,6 @@ namespace EventsLookup.Views
             this.InitializeComponent();
         }
 
-
         private async void OnExport(object sender, TappedRoutedEventArgs e)
         {
             StringBuilder sb = new StringBuilder();
@@ -52,11 +54,11 @@ namespace EventsLookup.Views
             string line = $"Group Name;Group Url;City;Members;Organizer;Next Event";
             sb.AppendLine(line);
 
-            foreach (var item in Default.Groups)
-            {
-                line = $"{item?.Name};{item?.Link};{item?.City};{item?.Members};{item?.Organizer?.Name};{item?.NextEvent?.Name}";
-                sb.AppendLine(line);
-            }
+            //foreach (var item in Default.Groups)
+            //{
+            //    line = $"{item?.Name};{item?.Link};{item?.City};{item?.Members};{item?.Organizer?.Name};{item?.NextEvent?.Name}";
+            //    sb.AppendLine(line);
+            //}
 
             FileSavePicker savePicker = new FileSavePicker();
             savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
@@ -79,7 +81,10 @@ namespace EventsLookup.Views
             object value = null;
             var item = groupsList.SelectedItem as Group;
 
-            Grid template = sender as Grid;
+            if (item.AllEvents == null) return;
+
+            UIElement child = sender as UIElement;
+            var template = FindParent<Grid>(child);
 
             if (item.IsEventsVisible)
             {
@@ -164,5 +169,24 @@ namespace EventsLookup.Views
                 return FindParent<T>(parentObject);
         }
 
+        private void SwitchView(object sender, RoutedEventArgs e)
+        {
+            if (IsCalendarView)
+            {
+                IsCalendarView = false;
+
+                calendarList.Visibility = Visibility.Collapsed;
+                groupsList.Visibility = Visibility.Visible;
+                groupSectionTitle.Text = "GROUPS";
+            }
+            else
+            {
+                IsCalendarView = true;
+
+                calendarList.Visibility = Visibility.Visible;
+                groupsList.Visibility = Visibility.Collapsed;
+                groupSectionTitle.Text = "CALENDAR";
+            }
+        }
     }
 }

@@ -46,6 +46,7 @@
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\EventsResponse.cs" />
     <Compile Include="Models\Group.cs" />
+    <Compile Include="Models\Member.cs" />
     <Compile Include="Models\Meta.cs" />
     <Compile Include="Models\Ordering.cs" />
     <Compile Include="Models\Organizer.cs" />

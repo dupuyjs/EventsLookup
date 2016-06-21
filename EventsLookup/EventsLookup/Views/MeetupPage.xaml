@@ -7,16 +7,221 @@
     xmlns:models="using:MeetupLibrary.Models"
     xmlns:fav="using:EventsLookup.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:EventsLookup.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     RequestedTheme="Dark"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <!-- CONVERTERS -->
         <conv:DateFormatter x:Key="DateFormatter"/>
         <conv:IntegerConverter x:Key="IntegerConverter"/>
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:FavoriteConverter x:Key="FavoriteConverter"/>
+
+        <Style TargetType="ListViewItem" x:Key="ListViewItemTopicStyle">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Grid x:Name="ContentBorder"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="BorderBackground"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0"
+                                                 To="1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="BorderBackground"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0"
+                                                 To="1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Selected">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0:0:0"
+                                                 To="1"/>
+                                            <DoubleAnimation Storyboard.TargetName="BorderBackground"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0"
+                                                 To="1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ThemeGrayHigh2ColorBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOverSelected">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0:0:0"
+                                                 To="1"/>
+                                            <DoubleAnimation Storyboard.TargetName="BorderBackground"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0"
+                                                 To="1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ThemeGrayMediumColorBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PressedSelected">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0:0:0"
+                                                 To="1"/>
+                                            <DoubleAnimation Storyboard.TargetName="BorderBackground"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 Duration="0"
+                                                 To="1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ThemeGrayHigh1ColorBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="DisabledStates">
+                                    <VisualState x:Name="Enabled"/>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ContentBorder"
+                                 Storyboard.TargetProperty="Opacity"
+                                 Duration="0"
+                                 To="{ThemeResource ListViewItemDisabledThemeOpacity}"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                           
+                            <Border x:Name="BorderBackground"              
+                                IsHitTestVisible="False"
+                                Background="{ThemeResource SystemControlHighlightListAccentLowBrush}"    
+                                Opacity="0"
+                                Control.IsTemplateFocusTarget="True"/>
+                            
+                            <Grid x:Name="ContentPresenterGrid"
+                                  Background="Transparent"
+                                  Margin="0,0,0,0">
+                                <Grid.RenderTransform>
+                                    <TranslateTransform x:Name="ContentPresenterTranslateTransform"/>
+                                </Grid.RenderTransform>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                            <!--  The 'Xg' text simulates the amount of space one line of text will occupy.
+                                  In the DataPlaceholder state, the Content is not loaded yet so we
+                                  approximate the size of the item using placeholder text. -->
+                            <TextBlock x:Name="PlaceholderTextBlock"
+                                Opacity="0"
+                                Text="Xg"
+                                Foreground="{x:Null}"
+                                Margin="{TemplateBinding Padding}"
+                                IsHitTestVisible="False"
+                                AutomationProperties.AccessibilityView="Raw"/>
+                            <Rectangle x:Name="PlaceholderRect"
+                                Visibility="Collapsed"
+                                Fill="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"/>
+                            <Rectangle x:Name="MultiArrangeOverlayBackground"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                Fill="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
+                                Grid.ColumnSpan="2"/>
+                            <Border x:Name="MultiSelectSquare"
+                                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                                BorderThickness="2"
+                                Width="20"
+                                Height="20"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Visibility="Collapsed" >
+                                <Border.Clip>
+                                    <RectangleGeometry Rect="0,0,20,20">
+                                        <RectangleGeometry.Transform>
+                                            <TranslateTransform x:Name="MultiSelectClipTransform"/>
+                                        </RectangleGeometry.Transform>
+                                    </RectangleGeometry>
+                                </Border.Clip>
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="MultiSelectCheckBoxTransform"/>
+                                </Border.RenderTransform>
+                                <FontIcon x:Name="MultiSelectCheck"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    Glyph="&#xE73E;"
+                                    FontSize="16"
+                                    Foreground="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                                    Visibility="Collapsed"
+                                    Opacity="0"/>
+                            </Border>
+                            <TextBlock x:Name="MultiArrangeOverlayText"
+                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DragItemsCount}"
+                                Foreground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
+                                FontFamily="{ThemeResource ContentControlThemeFontFamily}"
+                                FontSize="26.667"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                TextWrapping="Wrap"
+                                TextTrimming="WordEllipsis"
+                                Margin="18,9,0,0"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Grid.ColumnSpan="2"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style TargetType="ListViewItem" x:Key="ListViewItemGroupStyle">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -46,13 +251,7 @@
             </Setter>
         </Style>
 
-        <Style TargetType="ListViewItem" x:Key="ListViewItemTopicStyle">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0" />
-        </Style>
-
+        <!-- ANIMATIONS -->
         <Storyboard x:Name="OpenSearch">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)" Storyboard.TargetName="AddTopic">
                 <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="0"/>
@@ -64,9 +263,15 @@
                 <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="-320"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
+
+        <!-- VIEW SOURCE - USED FOR CALENDAR LIST -->
+        <CollectionViewSource x:Name="calendarViewSource" IsSourceGrouped="true" Source="{x:Bind Default.Meetups, Mode=OneWay}"/>
+
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <!-- VISUAL STATES -->
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveStates">
                 <VisualState x:Name="Small">
@@ -99,7 +304,8 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        <!-- Main Layout -->
+
+        <!-- MAIN LAYOUT -->
         <Grid x:Name="mainLayout" RequestedTheme="Light">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="topicsColumn" Width="400"/>
@@ -110,10 +316,17 @@
                 <RowDefinition x:Name="headerRow" Height="80"/>
                 <RowDefinition x:Name="contentRow" Height="*"/>
             </Grid.RowDefinitions>
-            <Grid x:Name="topicsHeader" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Background="{ThemeResource ThemeRedHigh1ColorBrush}">
-                <Image Source="ms-appx:///Assets/Commons/AppHeader.png" Stretch="Uniform" HorizontalAlignment="Left"/>
+            <Grid x:Name="topicsHeader" 
+                  Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" 
+                  Background="{ThemeResource ThemeRedHigh1ColorBrush}">
+                <Image Source="ms-appx:///Assets/Commons/AppHeader.png" 
+                       Stretch="Uniform" 
+                       HorizontalAlignment="Left"/>
             </Grid>
-            <Grid x:Name="topicsLayout" Grid.Column="0" Grid.Row="1" Background="{StaticResource ThemeGrayLow1ColorBrush}">
+            <!-- FAVORITES -->
+            <Grid x:Name="favoritesLayout" 
+                  Grid.Column="0" Grid.Row="1" 
+                  Background="{StaticResource ThemeGrayLow1ColorBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
@@ -145,28 +358,12 @@
                     </Grid.RenderTransform>
                     <StackPanel>
                         <TextBlock Text="SEARCH" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}"/>
-                        <ComboBox x:Name="cbCities" 
-                            ItemsSource="{x:Bind Default.Cities, Mode=OneWay}"
-                            DisplayMemberPath="CityName" 
-                            SelectedValuePath="Zip"
-                            SelectedValue="{x:Bind Default.SelectedCity, Mode=TwoWay}"
-                            Header="City"
-                            HorizontalAlignment="Stretch"
-                            Margin="12,4"/>
                         <ComboBox x:Name="cbCategories" 
                             ItemsSource="{x:Bind Default.Categories, Mode=OneWay}" 
                             DisplayMemberPath="Name"
                             SelectedValuePath="Id"
                             SelectedValue="{x:Bind Default.SelectedCategory, Mode=TwoWay, Converter={StaticResource IntegerConverter}}" 
                             Header="Category"
-                            HorizontalAlignment="Stretch"
-                            Margin="12,4"/>
-                        <ComboBox x:Name="cbOrdering" 
-                            ItemsSource="{x:Bind Default.Ordering, Mode=OneWay}" 
-                            DisplayMemberPath="Key"
-                            SelectedValuePath="Value"
-                            SelectedValue="{x:Bind Default.SelectedOrdering, Mode=TwoWay}"
-                            Header="Ordering"
                             HorizontalAlignment="Stretch"
                             Margin="12,4"/>
                         <AutoSuggestBox x:Name="tbKeywords" 
@@ -184,10 +381,6 @@
                             Header="Topic"
                             HorizontalAlignment="Stretch"
                             Margin="12,4"/>
-                        <CheckBox x:Name="checkUpcoming"
-                            IsChecked="{x:Bind Default.Upcoming, Mode=TwoWay}"
-                            Content="Upcoming Events Only"      
-                            Margin="12,4"/>
                         <Button x:Name="btnSubmit" 
                         Grid.Row="3"
                         HorizontalAlignment="Stretch"
@@ -203,32 +396,64 @@
                     <AppBarButton Icon="Delete"/>
                 </CommandBar>
             </Grid>
+
             <Grid x:Name="groupsHeader" Grid.Column="1" Grid.Row="0" >
                 <Image Source="ms-appx:///Assets/Commons/AppTitle.png" HorizontalAlignment="Right" Margin="20,0"/>
             </Grid>
+
+            <!-- MEETUP GROUPS -->
             <Grid x:Name="groupsLayout" 
                   Grid.Column="1" Grid.Row="1" 
                   Background="{StaticResource ThemeGrayLow2ColorBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <!-- GROUP MODE -->
+                <Grid>
+                    <TextBlock x:Name="groupSectionTitle"
+                               Text="GROUPS" 
+                               Style="{StaticResource ThemeHeaderStyle}" 
+                               Foreground="{ThemeResource ThemeGrayMediumColorBrush}"/>
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <ComboBox x:Name="cbCities" 
+                                    ItemsSource="{x:Bind Default.Cities, Mode=OneWay}"
+                                    DisplayMemberPath="CityName" 
+                                    SelectedValuePath="Zip"
+                                    SelectedValue="{x:Bind Default.SelectedCity, Mode=TwoWay}"
+                                    SelectionChanged="{x:Bind Default.OnFilterChanged}"
+                                    Width="180"
+                                    Style="{ThemeResource ThemeFilterStyle}"/>
+                        <ComboBox x:Name="cbOrdering" 
+                                    ItemsSource="{x:Bind Default.Ordering, Mode=OneWay}" 
+                                    DisplayMemberPath="Key"
+                                    SelectedValuePath="Value"
+                                    SelectedValue="{x:Bind Default.SelectedOrdering, Mode=TwoWay}"
+                                    SelectionChanged="{x:Bind Default.OnFilterChanged}"
+                                    Width="140"
+                                    Style="{ThemeResource ThemeFilterStyle}"/>
+                    </StackPanel>
+                </Grid>
                 <ListView x:Name="groupsList"
+                          Visibility="Visible"
+                          Grid.Row="1"
                           ItemsSource="{x:Bind Default.Groups, Mode=OneWay}" 
                           ItemContainerStyle="{StaticResource ListViewItemGroupStyle}">
-                    <ListView.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="GROUPS" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeGrayMediumColorBrush}"/>
-                        </DataTemplate>
-                    </ListView.HeaderTemplate>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:Group">
                             <Border BorderThickness="0,0,0,1" 
                                     BorderBrush="{ThemeResource ThemeGrayMediumColorBrush}" 
                                     Margin="18,0" 
                                     Padding="0,18,0,8">
-                                <Grid x:Name="infoGroup" Tapped="OnItemClicked">
+                                <Grid x:Name="infoGroup">
                                     <Grid.Resources>
                                         <Storyboard x:Name="ExpandOpenAnimation">
                                             <DoubleAnimation Duration="0:0:0.5" To="90" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.Rotation)" Storyboard.TargetName="fontIcon" d:IsOptimized="True"/>
+                                            <DoubleAnimation Duration="0:0:0.5" From="0.0" To="1.0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="groupMeetupList" d:IsOptimized="True"/>
                                         </Storyboard>
                                         <Storyboard x:Name="ExpandCloseAnimation">
+                                            <DoubleAnimation Duration="0:0:0.5" From="1.0" To="0.0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="groupMeetupList" d:IsOptimized="True"/>
                                             <DoubleAnimation Duration="0:0:0.5" From="90" To="0" Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.Rotation)" Storyboard.TargetName="fontIcon" d:IsOptimized="True"/>
                                         </Storyboard>
                                     </Grid.Resources>
@@ -241,12 +466,19 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <FontIcon x:Name="fontIcon" FontSize="20" VerticalAlignment="Top" Glyph="&#xE26B;" Margin="0,4,8,0" Foreground="{ThemeResource ThemeGrayMediumColorBrush}" RenderTransformOrigin="0.5,0.5">
+                                    <FontIcon x:Name="fontIcon"
+                                              Tapped="OnItemClicked"
+                                              FontSize="20" 
+                                              VerticalAlignment="Top" 
+                                              Glyph="&#xE26B;" 
+                                              Margin="0,4,8,0" 
+                                              Foreground="{ThemeResource ThemeGrayMediumColorBrush}" 
+                                              RenderTransformOrigin="0.5,0.5">
                                         <FontIcon.RenderTransform>
                                             <CompositeTransform/>
                                         </FontIcon.RenderTransform>
                                     </FontIcon>
-                                    <StackPanel Grid.Column="1">
+                                    <StackPanel Grid.Column="1" Tapped="OnItemClicked">
                                         <TextBlock Text="{x:Bind Name}" Style="{StaticResource ThemeGroupTitleStyle}"/>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{x:Bind City}" Style="{StaticResource ThemeGroupSubTitleStyle}"/>
@@ -267,7 +499,6 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-                                        <!--<WebView Source="{x:Bind Description}" Grid.Row="0" Margin="0,8"/>-->
                                         <ListView x:Name="groupMeetupList"
                                                   Grid.Row="1"
                                                   Margin="48,8,0,24"
@@ -317,36 +548,164 @@
                                     </Grid>
                                 </Grid>
                             </Border>
-                            <!--<Grid x:Name="infoMeetup" Grid.Column="1" Visibility="{x:Bind NextEvent, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Bind NextEvent.Name}" FontWeight="Light" Foreground="{ThemeResource ThemeBlueColorBrush}"/>
-                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,-4,0,0">
-                                        <TextBlock Text="{x:Bind NextEvent.Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:D\}}" VerticalAlignment="Center" Foreground="Gray" FontWeight="Light"/>
-                                        <TextBlock VerticalAlignment="Center" Foreground="Gray" FontWeight="Light" Margin="4,0">
-                                                <Run Text="|" />
-                                                <Run Text="{x:Bind NextEvent.YesRsvpCount}" />
-                                                <Run Text="attendees" />
-                                        </TextBlock>
-                                        <TextBlock Text="{x:Bind NextEvent.Venue.Name}" VerticalAlignment="Center" Foreground="Gray" FontWeight="Light"/>
-                                    </StackPanel>
-                                </Grid>-->
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </Grid>
-            <Grid x:Name="meetupHeader" Grid.Column="2" Grid.Row="0" Background="{ThemeResource ThemeredHigh2ColorBrush}">
+                <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind Default.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,0,100">
+                    <FontIcon Glyph="&#xE8F8;" FontSize="26" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}" Margin="8,0"/>
+                    <TextBlock Text="no group available" Style="{ThemeResource ThemeCaptionStyle}"/>
+                </StackPanel>
 
+                <!-- CALENDAR MODE -->
+                <ListView x:Name="calendarList"
+                          Grid.Row="1"
+                          Visibility="Collapsed"
+                          ItemsSource="{Binding Source={StaticResource calendarViewSource}, Mode=OneWay}"
+                          ItemContainerStyle="{StaticResource ListViewItemGroupStyle}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Event">
+                            <Border Background="White" CornerRadius="8" Padding="8" Margin="18,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:dd\}}" Style="{StaticResource ThemeGroupCircleStyle}" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:dddd\}}" Style="{StaticResource ThemeEventSubTitleStyle}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource ThemeEventTitleStyle}" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Group.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Venue.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                            <TextBlock Text="/" Margin="4,0"/>
+                                            <TextBlock Text="{x:Bind YesRsvpCount}" Style="{StaticResource ThemeEventSubTitleStyle}" FontWeight="Bold" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}" IsTextScaleFactorEnabled="False"/>
+                                            <TextBlock Text=" registered" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                        <HyperlinkButton Margin="8,0" NavigateUri="{x:Bind EventUrl}">
+                                            <Image Source="ms-appx:///Assets/Commons/Follow.png" Height="30" Width="30"/>
+                                        </HyperlinkButton>
+                                        <Image Source="ms-appx:///Assets/Commons/Calendar.png" Height="30" Width="30" Margin="8,4" Tapped="OnAddCalendar"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding Key, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:MMMM\}}"
+                                                   Style="{ThemeResource ThemeGroupTitleStyle}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
+
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsStackPanel AreStickyGroupHeadersEnabled="True" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ListView>
+                <CommandBar Grid.Row="2">
+                    <AppBarButton Icon="Add" Click="SwitchView"/>
+                    <AppBarButton Icon="Delete"/>
+                </CommandBar>
             </Grid>
+            <ProgressRing
+                Grid.Row="1" Grid.Column="1"
+                Height="70"
+                Width="70"
+                Foreground="{ThemeResource ThemeRedHigh1ColorBrush}"
+                IsActive="{x:Bind Default.IsLoading, Mode=OneWay}" 
+                Visibility="{x:Bind Default.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <!-- MEETUP USER DATA -->
+            <Grid x:Name="meetupHeader" Grid.Column="2" Grid.Row="0" Background="{ThemeResource ThemeredHigh2ColorBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="hello" Style="{ThemeResource ThemeUserWelcomeStyle}"/>
+                    <TextBlock Text="{x:Bind Default.User.Name, Mode=OneWay}" Style="{ThemeResource ThemeUserNameStyle}"/>
+                </StackPanel>
+                <Ellipse Grid.Column="1" Height="50" Width="50" Fill="White" Margin="12,0"/>
+                <Ellipse Grid.Column="1" Height="50" Width="50" Margin="12,0">
+                    <Ellipse.Fill>
+                        <ImageBrush ImageSource="{x:Bind Default.User.Photo.PhotoLink, Mode=OneWay}"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+            </Grid>
+
             <Grid x:Name="meetupLayout" Grid.Column="2" Grid.Row="1" Background="{ThemeResource ThemeGrayLow3ColorBrush}">
-                <ListView x:Name="meetupList">
+                <ListView x:Name="meetupList" ItemsSource="{x:Bind Default.Calendar, Mode=OneWay}" ItemContainerStyle="{StaticResource ListViewItemEventStyle}">
                     <ListView.HeaderTemplate>
                         <DataTemplate>
                             <TextBlock Text="MEETUPS" Style="{StaticResource ThemeHeaderStyle}" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}"/>
                         </DataTemplate>
                     </ListView.HeaderTemplate>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Event">
+                            <Border Background="White" CornerRadius="8" Padding="4" BorderThickness="1" BorderBrush="{ThemeResource ThemeGrayLow1ColorBrush}" >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border BorderThickness="1" BorderBrush="{ThemeResource ThemeGrayLow1ColorBrush}" Height="70" Width="70">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0" Background="{ThemeResource ThemeRedHigh1ColorBrush}">
+                                                <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:MMMM\}}" Style="{StaticResource ThemeEventSubTitleStyle}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,4"/>
+                                            </Grid>
+                                            <TextBlock Grid.Row="1" Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:dd\}}" Style="{StaticResource ThemeGroupCircleStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}" HorizontalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Grid.Row="1" Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:hh\}}" Style="{StaticResource ThemeGroupCircleStyle}" Foreground="{ThemeResource ThemeGrayHigh1ColorBrush}" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{x:Bind Venue.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        <TextBlock Text="{x:Bind Venue.Address}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        <TextBlock Text="{x:Bind Venue.City}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind YesRsvpCount}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                            <TextBlock Text=" registered" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!--<TextBlock Text="{x:Bind Name}" Style="{StaticResource ThemeEventTitleStyle}" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{x:Bind Time, Converter={StaticResource DateFormatter}, ConverterParameter=\{0:D\}}" Style="{StaticResource ThemeEventTitleStyle}"/>
+                                        <TextBlock Text="{x:Bind Venue.Name}" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind YesRsvpCount}" Style="{StaticResource ThemeEventSubTitleStyle}" FontWeight="Bold" Foreground="{ThemeResource ThemeRedHigh1ColorBrush}" IsTextScaleFactorEnabled="False"/>
+                                            <TextBlock Text=" registered" Style="{StaticResource ThemeEventSubTitleStyle}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                        <HyperlinkButton Margin="8,0" NavigateUri="{x:Bind EventUrl}">
+                                            <Image Source="ms-appx:///Assets/Commons/Follow.png" Height="30" Width="30"/>
+                                        </HyperlinkButton>
+                                        <Image Source="ms-appx:///Assets/Commons/Calendar.png" Height="30" Width="30" Margin="8,4" Tapped="OnAddCalendar"/>
+                                    </StackPanel>-->
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
                 </ListView>
             </Grid>
         </Grid>

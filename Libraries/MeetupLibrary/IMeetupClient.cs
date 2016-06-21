@@ -12,5 +12,7 @@ namespace MeetupLibrary
         Task<CategoriesResponse> GetCategories();
         Task<List<Group>> GetGroups(int topicId, string zip, int? category, bool upcomingOnly, string ordering = "most_active", string country = "fr");
         Task<List<Topic>> GetTopics(string query, string lang = "en-US");
+        Task<Member> GetUserProfile();
+        Task<EventsResponse> GetUserCalendar(int memberId);
     }
 }

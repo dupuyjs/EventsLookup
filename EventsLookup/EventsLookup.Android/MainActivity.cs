@@ -72,8 +72,8 @@ namespace EventsLookup.Android
 
             #region Feedback and Monitoring
 
-            //HockeyApp.Metrics.MetricsManager.Register(this, Application, HOCKEY_APP_ID);
-            //HockeyApp.Metrics.MetricsManager.TrackEvent("Started");
+            HockeyApp.Metrics.MetricsManager.Register(this, Application, HOCKEY_APP_ID);
+            HockeyApp.Metrics.MetricsManager.TrackEvent("Started");
 
             CrashManager.Register(this, HOCKEY_APP_ID);
             FeedbackManager.Register(this, HOCKEY_APP_ID);

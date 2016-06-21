@@ -106,8 +106,8 @@ namespace EventsLookup.Android
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7f070021
-			public const int City = 2131165217;
+			// aapt resource value: 0x7f070022
+			public const int City = 2131165218;
 			
 			// aapt resource value: 0x7f07001c
 			public const int CrashButton = 2131165212;
@@ -118,17 +118,20 @@ namespace EventsLookup.Android
 			// aapt resource value: 0x7f07001e
 			public const int HelloButton = 2131165214;
 			
+			// aapt resource value: 0x7f070020
+			public const int HelloTextView = 2131165216;
+			
 			// aapt resource value: 0x7f07001f
 			public const int ListViewMeetup = 2131165215;
 			
-			// aapt resource value: 0x7f070022
-			public const int Members = 2131165218;
-			
-			// aapt resource value: 0x7f070020
-			public const int Name = 2131165216;
-			
 			// aapt resource value: 0x7f070023
-			public const int Organizer = 2131165219;
+			public const int Members = 2131165219;
+			
+			// aapt resource value: 0x7f070021
+			public const int Name = 2131165217;
+			
+			// aapt resource value: 0x7f070024
+			public const int Organizer = 2131165220;
 			
 			// aapt resource value: 0x7f07000d
 			public const int button_add_response = 2131165197;

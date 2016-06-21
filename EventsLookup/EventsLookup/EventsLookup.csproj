@@ -113,6 +113,7 @@
     <Compile Include="Converters\IntegerConverter.cs" />
     <Compile Include="Converters\DateFormatter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Helpers\HtmlStringExtension.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Models\Favorite.cs" />
     <Compile Include="Models\Navigation\NavType.cs" />

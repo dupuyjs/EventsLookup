@@ -91,7 +91,28 @@ namespace MeetupLibrary
 
             var template = new UriTemplate("/recommended/group_topics?key={apikey}&text={query}&lang={lang}&sign=true");
 
-            return await GetWithRetryAsync<List<Topic>> (_hostUri, template, parameters);
+            return await GetWithRetryAsync<List<Topic>>(_hostUri, template, parameters);
+        }
+
+        public async Task<Member> GetUserProfile()
+        {
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("apikey", _apikey);
+
+            var template = new UriTemplate("/2/member/self?key={apikey}");
+
+            return await GetWithRetryAsync<Member>(_hostUri, template, parameters);
+        }
+
+        public async Task<EventsResponse> GetUserCalendar(int memberId)
+        {
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("apikey", _apikey);
+            parameters.Add("memberId", memberId.ToString());
+
+            var template = new UriTemplate("/2/events?key={apikey}&member_id={memberId}&rsvp=yes,maybe,waitlist&sign=true");
+
+            return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }
     }
 }

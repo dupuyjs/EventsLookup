@@ -12,7 +12,7 @@
     <SolidColorBrush x:Key="NavButtonCheckedPressedBackgroundBrush" Color="{ThemeResource SystemListAccentMediumColor}" />
     <SolidColorBrush x:Key="NavButtonCheckedHoverBackgroundBrush" Color="{ThemeResource SystemListAccentHighColor}" />
 
-    <SolidColorBrush x:Key="BurgerMenuBackground" Color="{ThemeResource ThemeGrayLowColor}"/>
+    <SolidColorBrush x:Key="BurgerMenuBackground" Color="{ThemeResource ThemeGrayHigh1Color}"/>
     <SolidColorBrush x:Key="BurgerMenuForeground" Color="White"/>
 
     <Style TargetType="SplitView">

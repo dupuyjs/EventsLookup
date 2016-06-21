@@ -19,7 +19,7 @@ namespace EventsLookup.Models
             this.TopicId = topicId;
         }
 
-        public static List<Favorite> GetDefaultTopics()
+        public static List<Favorite> GetDefaultFavorites()
         {
             List<Favorite> favorites = new List<Favorite>();
             favorites.Add(new Favorite("BOTS", 34, 1508598));

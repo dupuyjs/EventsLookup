@@ -22,6 +22,20 @@ namespace EventsLookup.ViewModels
 {
     public class MeetupViewModel : ViewModelBase
     {
+
+        #region Meetup Proxy
+
+        private IMeetupClient _meetupProxy = null;
+        public IMeetupClient MeetupProxy
+        {
+            get
+            {
+                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey));
+            }
+        }
+
+        #endregion
+
         #region Properties
 
         private List<Group> _groups = null;
@@ -41,14 +55,91 @@ namespace EventsLookup.ViewModels
             }
         }
 
-        private IMeetupClient _meetupProxy = null;
-        public IMeetupClient MeetupProxy
+        private List<Event> _calendar = null;
+        public List<Event> Calendar
         {
             get
             {
-                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey));
+                return _calendar;
+            }
+            set
+            {
+                _calendar = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => Calendar);
+                });
             }
         }
+
+        private IOrderedEnumerable<IGrouping<DateTime, Event>> _meetups = null;
+        public IOrderedEnumerable<IGrouping<DateTime, Event>> Meetups
+        {
+            get
+            {
+                return _meetups;
+            }
+            set
+            {
+                _meetups = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => Meetups);
+                });
+            }
+        }
+
+        private bool _isLoading = true;
+        public bool IsLoading
+        {
+            get
+            {
+                return _isLoading;
+            }
+            set
+            {
+                _isLoading = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => IsLoading);
+                });
+            }
+        }
+
+        private bool _isEmpty = false;
+        public bool IsEmpty
+        {
+            get
+            {
+                return _isEmpty;
+            }
+            set
+            {
+                _isEmpty = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => IsEmpty);
+                });
+            }
+        }
+
+        private Member _user = null;
+        public Member User
+        {
+            get
+            {
+                return _user;
+            }
+            set
+            {
+                _user = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => User);
+                });
+            }
+        }
+
 
         private List<City> _cities = null;
         public List<City> Cities
@@ -235,36 +326,36 @@ namespace EventsLookup.ViewModels
             }
         }
 
-        private bool? _upcoming = false;
-        public bool? Upcoming
-        {
-            get
-            {
-                return _upcoming;
-            }
-            set
-            {
-                _upcoming = value;
-                DispatcherHelper.CheckBeginInvokeOnUI(() =>
-                {
-                    RaisePropertyChanged(() => Upcoming);
-                });
-            }
-        }
+        //private bool? _upcoming = false;
+        //public bool? Upcoming
+        //{
+        //    get
+        //    {
+        //        return _upcoming;
+        //    }
+        //    set
+        //    {
+        //        _upcoming = value;
+        //        DispatcherHelper.CheckBeginInvokeOnUI(() =>
+        //        {
+        //            RaisePropertyChanged(() => Upcoming);
+        //        });
+        //    }
+        //}
 
-        private int _groupsNumber = 0;
-        public int GroupsNumber
+        private int _groupsCount = 0;
+        public int GroupsCount
         {
             get
             {
-                return _groupsNumber;
+                return _groupsCount;
             }
             set
             {
-                _groupsNumber = value;
+                _groupsCount = value;
                 DispatcherHelper.CheckBeginInvokeOnUI(() =>
                 {
-                    RaisePropertyChanged(() => GroupsNumber);
+                    RaisePropertyChanged(() => GroupsCount);
                 });
             }
         }
@@ -296,6 +387,23 @@ namespace EventsLookup.ViewModels
 
         #endregion
 
+        #region Caching
+
+        private Dictionary<int, List<Event>> _cacheManager = null;
+        public Dictionary<int, List<Event>> CacheManager
+        {
+            get
+            {
+                return _cacheManager ?? (_cacheManager = new Dictionary<int, List<Event>>());
+            }
+            set
+            {
+                _cacheManager = value;
+            }
+        }
+
+        #endregion
+
         public MeetupViewModel()
         {
             Task.Run(() => Initialize());
@@ -307,7 +415,13 @@ namespace EventsLookup.ViewModels
         {
             try
             {
-                this.Favorites = Favorite.GetDefaultTopics();
+                this.Favorites = Favorite.GetDefaultFavorites();
+
+                Member member = await MeetupProxy.GetUserProfile();
+                this.User = member;
+
+                var calendar = await MeetupProxy.GetUserCalendar(member.Id);
+                this.Calendar = calendar.Results;
 
                 var cities = await MeetupProxy.GetCities();
                 this.Cities = cities.Results;
@@ -323,7 +437,6 @@ namespace EventsLookup.ViewModels
                 this.SelectedOrdering = "most_active";
 
                 this.SelectedFavorite = this.Favorites.First();
-
             }
             catch (Exception)
             {
@@ -359,18 +472,44 @@ namespace EventsLookup.ViewModels
         {
             try
             {
-                var groups = await MeetupProxy.GetGroups(topicId, zip, categoryId, upcomingOnly, ordering);
+                List<Group> groups = null;
+                List<Event> meetups = new List<Event>();
+
+                groups = await MeetupProxy.GetGroups(topicId, zip, categoryId, upcomingOnly, ordering);
+
                 this.Groups = groups;
-                this.GroupsNumber = groups.Count();
+                this.GroupsCount= groups.Count();
+
+                this.IsEmpty = (GroupsCount == 0) ? true : false;
 
                 foreach (var item in Groups)
                 {
-                    if (item.NextEvent != null)
+                    if (item.AllEvents == null && item.NextEvent != null)
                     {
-                        var events = await MeetupProxy.GetEvents(item.Id);
-                        item.AllEvents = events.Results;
+                        List<Event> events = null;
+
+                        if (CacheManager.ContainsKey(item.Id))
+                        {
+                            if (CacheManager[item.Id] != null) events = CacheManager[item.Id];
+                        }
+                        else
+                        {
+                            events = (await MeetupProxy.GetEvents(item.Id)).Results;
+                            CacheManager.Add(item.Id, events);
+                        }
+
+                        item.AllEvents = events;
+                        meetups.AddRange(events);
                     }
-                }
+                } //foreach
+
+                var query = from meetup in meetups
+                            orderby meetup.Time
+                            group meetup by new DateTime(meetup.Time.Year, meetup.Time.Month, 1) into g
+                            orderby g.Key
+                            select g;
+
+                this.Meetups = query;
             }
             catch (Exception)
             {
@@ -383,12 +522,26 @@ namespace EventsLookup.ViewModels
 
         public async void OnFavoriteChanged(object sender, SelectionChangedEventArgs e)
         {
+            this.IsLoading = true;
+
             var favorite = this.SelectedFavorite;
             var zip = this.SelectedCity;
             var ordering = this.SelectedOrdering;
-            var upcomingOnly = this.Upcoming.Value;
 
-            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, upcomingOnly, ordering);
+            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
+
+            this.IsLoading = false;
+        }
+
+        public async void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoading) return;
+
+            var favorite = this.SelectedFavorite;
+            var zip = this.SelectedCity;
+            var ordering = this.SelectedOrdering;
+
+            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
         }
 
         public async void OnSubmit(object sender, RoutedEventArgs e)
@@ -397,9 +550,8 @@ namespace EventsLookup.ViewModels
             var zip = this.SelectedCity;
             var ordering = this.SelectedOrdering;
             var topicId = this.SelectedTopic;
-            var upcomingOnly = this.Upcoming.Value;
 
-            await GetGroups(topicId, zip, category, upcomingOnly, ordering);
+            await GetGroups(topicId, zip, category, false, ordering);
         }
     }
 }
