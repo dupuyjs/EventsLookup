@@ -1,6 +1,8 @@
 #Events Lookup
 
-Application de démo Windows 10 UWP pour consulter les prochains meetups.
+Application Windows 10 UWP pour consulter facilement les prochains meetups.
+
+![Image of EventsLookup](https://github.com/dupuyjs/EventsLookup/tree/master/EventsLookup/EventsLookup/Assets/Commons/Design/Lookup.png)
 
 ### Getting Started
 Pour l'utiliser, suivez simplement les étapes suivantes:
@@ -21,4 +23,4 @@ Pour l'utiliser, suivez simplement les étapes suivantes:
     }
 ```
 
-6. Compilez !
+Compilez ! Le tour est joué.
