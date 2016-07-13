@@ -11,6 +11,7 @@ Pour l'utiliser, suivez simplement les étapes suivantes:
 4. Clonez le projet Events Lookups
 5. Collez la clé dans le fichier Keys.cs
 
+'''
     namespace EventsLookup.Helpers
     {
         public static class Keys
@@ -18,5 +19,6 @@ Pour l'utiliser, suivez simplement les étapes suivantes:
             public const string MeetupApiKey = @"YourApiKey";
         }
     }
+'''
 
 6. Compilez !
