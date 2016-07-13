@@ -48,6 +48,15 @@ namespace MeetupLibrary.Models
         public int? Duration { get; set; }
         [JsonProperty("how_to_find_us")]
         public string HowToFindUs { get; set; }
+
+        public DateTime TimeWithOffset
+        {
+            get
+            {
+                return Time.AddTicks(this.UtcOffset);
+            }
+        }
+        
     }
 }
 

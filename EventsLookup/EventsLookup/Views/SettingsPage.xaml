@@ -8,6 +8,9 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+        <StackPanel>
+            <TextBlock Text="OAuth Key"/>
+            <PasswordBox x:Name="passwordBox" Password="YourApiKey" PasswordRevealMode="Peek"/>
+        </StackPanel>
     </Grid>
 </Page>

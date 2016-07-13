@@ -65,7 +65,7 @@ namespace MeetupLibrary
             if (category.HasValue) parameters.Add("category", category.ToString());
             parameters.Add("upcomingonly", upcomingOnly.ToString());
 
-            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=50&sign=true");
+            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=200&sign=true");
 
             return await GetWithRetryAsync<List<Group>>(_hostUri, template, parameters);
         }

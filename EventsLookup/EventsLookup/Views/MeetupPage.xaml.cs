@@ -47,35 +47,6 @@ namespace EventsLookup.Views
             this.InitializeComponent();
         }
 
-        private async void OnExport(object sender, TappedRoutedEventArgs e)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            string line = $"Group Name;Group Url;City;Members;Organizer;Next Event";
-            sb.AppendLine(line);
-
-            //foreach (var item in Default.Groups)
-            //{
-            //    line = $"{item?.Name};{item?.Link};{item?.City};{item?.Members};{item?.Organizer?.Name};{item?.NextEvent?.Name}";
-            //    sb.AppendLine(line);
-            //}
-
-            FileSavePicker savePicker = new FileSavePicker();
-            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-
-            // Dropdown of file types the user can save the file as
-            savePicker.FileTypeChoices.Add("CSV file", new List<string>() { ".csv" });
-            savePicker.SuggestedFileName = "meetup";
-
-            StorageFile file = await savePicker.PickSaveFileAsync();
-            if (file != null)
-            {
-                CachedFileManager.DeferUpdates(file);
-                await FileIO.WriteTextAsync(file, sb.ToString());
-                await CachedFileManager.CompleteUpdatesAsync(file);
-            }
-        }
-
         private void OnItemClicked(object sender, TappedRoutedEventArgs e)
         {
             object value = null;
@@ -118,8 +89,6 @@ namespace EventsLookup.Views
 
         private async void OnAddCalendar(object sender, TappedRoutedEventArgs e)
         {
-            // Create an Appointment that should be added the user's appointments provider app.
-
             ListView listView = FindParent<ListView>(sender as Image);
             if (listView != null)
             {
@@ -127,8 +96,8 @@ namespace EventsLookup.Views
 
                 var appointment = new Windows.ApplicationModel.Appointments.Appointment();
                 appointment.Subject = item.Name;
-                appointment.Location = item.Venue?.Name;
-                appointment.StartTime = new DateTimeOffset(item.Time);
+                appointment.Location = item.Venue?.Name ?? string.Empty;
+                appointment.StartTime = new DateTimeOffset(item.TimeWithOffset) ;
                 //if (item.Duration.HasValue) appointment.Duration = new TimeSpan(item.Duration.Value * 1000);
                 appointment.DetailsKind = Windows.ApplicationModel.Appointments.AppointmentDetailsKind.Html;
                 appointment.Details = item.Description;
@@ -150,8 +119,6 @@ namespace EventsLookup.Views
             Point point = buttonTransform.TransformPoint(new Point());
             return new Rect(point, new Size(element.ActualWidth, element.ActualHeight));
         }
-
-
 
         public static T FindParent<T>(UIElement child) where T : DependencyObject
         {
@@ -178,6 +145,8 @@ namespace EventsLookup.Views
                 calendarList.Visibility = Visibility.Collapsed;
                 groupsList.Visibility = Visibility.Visible;
                 groupSectionTitle.Text = "GROUPS";
+
+                switchButton.Icon = new SymbolIcon(Symbol.Calendar);
             }
             else
             {
@@ -186,6 +155,24 @@ namespace EventsLookup.Views
                 calendarList.Visibility = Visibility.Visible;
                 groupsList.Visibility = Visibility.Collapsed;
                 groupSectionTitle.Text = "CALENDAR";
+
+                switchButton.Icon = new SymbolIcon(Symbol.AllApps);
+            }
+        }
+
+        private async void OnGoToMeetup(object sender, TappedRoutedEventArgs e)
+        {
+            ListView listView = FindParent<ListView>(sender as Image);
+            if (listView != null)
+            {
+                var item = (Event)listView.SelectedItem;
+
+                var location = new Uri($"ms-drive-to:?destination.latitude={item.Venue.Latitude}&destination.longitude={item.Venue.Longitude}&destination.name={item.Venue.Name}");
+
+                // Launch the Windows Maps app
+                var launcherOptions = new Windows.System.LauncherOptions();
+                launcherOptions.TargetApplicationPackageFamilyName = "Microsoft.WindowsMaps_8wekyb3d8bbwe";
+                var success = await Windows.System.Launcher.LaunchUriAsync(location, launcherOptions);
             }
         }
     }

@@ -15,8 +15,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 namespace EventsLookup.ViewModels
 {
@@ -106,19 +109,36 @@ namespace EventsLookup.ViewModels
             }
         }
 
-        private bool _isEmpty = false;
-        public bool IsEmpty
+        private bool _isGroupsEmpty = false;
+        public bool IsGroupsEmpty
         {
             get
             {
-                return _isEmpty;
+                return _isGroupsEmpty;
             }
             set
             {
-                _isEmpty = value;
+                _isGroupsEmpty = value;
                 DispatcherHelper.CheckBeginInvokeOnUI(() =>
                 {
-                    RaisePropertyChanged(() => IsEmpty);
+                    RaisePropertyChanged(() => IsGroupsEmpty);
+                });
+            }
+        }
+
+        private bool _isUserMeetupsEmpty = false;
+        public bool IsUserMeetupsEmpty
+        {
+            get
+            {
+                return _isUserMeetupsEmpty;
+            }
+            set
+            {
+                _isUserMeetupsEmpty = value;
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    RaisePropertyChanged(() => IsUserMeetupsEmpty);
                 });
             }
         }
@@ -436,6 +456,8 @@ namespace EventsLookup.ViewModels
                 this.SelectedCategory = 34;
                 this.SelectedOrdering = "most_active";
 
+                this.IsUserMeetupsEmpty = (Calendar.Count == 0) ? true : false;
+
                 this.SelectedFavorite = this.Favorites.First();
             }
             catch (Exception)
@@ -480,7 +502,7 @@ namespace EventsLookup.ViewModels
                 this.Groups = groups;
                 this.GroupsCount= groups.Count();
 
-                this.IsEmpty = (GroupsCount == 0) ? true : false;
+                this.IsGroupsEmpty = (GroupsCount == 0) ? true : false;
 
                 foreach (var item in Groups)
                 {
@@ -552,6 +574,41 @@ namespace EventsLookup.ViewModels
             var topicId = this.SelectedTopic;
 
             await GetGroups(topicId, zip, category, false, ordering);
+        }
+
+        public async void OnExport(object sender, RoutedEventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            string line = $"Group Name;City;Meetup Name;Url;Registered;Date";
+            sb.AppendLine(line);
+
+            foreach (var item in Groups)
+            {
+                if (item.AllEvents != null)
+                {
+                    foreach (var meetup in item.AllEvents)
+                    {
+                        line = $"{item?.Name};{item?.City};{meetup?.Name};{meetup?.EventUrl};{meetup?.YesRsvpCount};{meetup?.Time}";
+                        sb.AppendLine(line);
+                    }
+                }
+            }
+
+            FileSavePicker savePicker = new FileSavePicker();
+            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+
+            // Dropdown of file types the user can save the file as
+            savePicker.FileTypeChoices.Add("CSV file", new List<string>() { ".csv" });
+            savePicker.SuggestedFileName = "meetup";
+
+            StorageFile file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                CachedFileManager.DeferUpdates(file);
+                await FileIO.WriteTextAsync(file, sb.ToString());
+                await CachedFileManager.CompleteUpdatesAsync(file);
+            }
         }
     }
 }
