@@ -17,6 +17,7 @@
         <!-- CONVERTERS -->
         <conv:DateFormatter x:Key="DateFormatter"/>
         <conv:IntegerConverter x:Key="IntegerConverter"/>
+        <conv:OrderingEnumConverter x:Key="OrderingEnumConverter"/>
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:FavoriteConverter x:Key="FavoriteConverter"/>
@@ -272,8 +273,7 @@
 
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="MainLayout">
         <!-- VISUAL STATES -->
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveStates">
@@ -431,7 +431,7 @@
                                     ItemsSource="{x:Bind Default.Ordering, Mode=OneWay}" 
                                     DisplayMemberPath="Key"
                                     SelectedValuePath="Value"
-                                    SelectedValue="{x:Bind Default.SelectedOrdering, Mode=TwoWay}"
+                                    SelectedValue="{x:Bind Default.SelectedOrdering, Mode=TwoWay, Converter={StaticResource OrderingEnumConverter}}"
                                     SelectionChanged="{x:Bind Default.OnFilterChanged}"
                                     Width="140"
                                     Style="{ThemeResource ThemeFilterStyle}"/>

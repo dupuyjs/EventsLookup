@@ -8,26 +8,27 @@
 // THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
 // ******************************************************************
 
-namespace MeetupLibrary.Models
+namespace EventsLookup.Converters
 {
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
+    using System;
+    using MeetupLibrary.Models;
+    using Windows.UI.Xaml.Data;
 
-    /// <summary>
-    /// A class that represents Categories response.
-    /// </summary>
-    public class CategoriesResponse
+    public class OrderingEnumConverter : IValueConverter
     {
-        /// <summary>
-        /// Gets list of the Category items.
-        /// </summary>
-        [JsonProperty("results")]
-        public List<Category> Results { get; internal set; }
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return (OrderingEnum)value;
+        }
 
-        /// <summary>
-        /// Gets additional information about the response.
-        /// </summary>
-        [JsonProperty("meta")]
-        public Meta Meta { get; internal set; }
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            if (value == null)
+            {
+                return OrderingEnum.MostActive;
+            }
+
+            return value;
+        }
     }
 }

@@ -1,70 +1,83 @@
-﻿using MeetupLibrary.Models;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Net.Http;
-using MeetupLibrary.Helpers;
-//using Windows.Web.Http.Filters;
+﻿// ******************************************************************
+// THE CODE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+// THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
+// ******************************************************************
 
 namespace MeetupLibrary
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MeetupLibrary.Helpers;
+    using Newtonsoft.Json;
+
+    /// <summary>
+    /// Http simple service client. Implements exponential retry pattern.
+    /// </summary>
     public class SimpleServiceClient : IDisposable
     {
-        //private HttpBaseProtocolFilter filter;
         private HttpClient httpClient;
-        CancellationTokenSource cts;
+        private CancellationTokenSource cts;
 
         private int xRateLimitRemaining = 20;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SimpleServiceClient"/> class.
+        /// </summary>
         public SimpleServiceClient()
         {
-            //filter = new HttpBaseProtocolFilter();
             httpClient = new HttpClient();
             cts = new CancellationTokenSource();
         }
 
-        public void Cancel()
-        {
-            cts.Cancel();
-            cts.Dispose();
-
-            // Re-create the CancellationTokenSource.
-            cts = new CancellationTokenSource();
-        }
-
-        public async Task<T> GetWithRetryAsync<T>(Uri baseUri, UriTemplate template, Dictionary<string,string> parameters)
+        /// <summary>
+        /// Simple Http REST request. Implements exponential retry pattern.
+        /// </summary>
+        /// <typeparam name="T">Object type.</typeparam>
+        /// <param name="baseUri">The base address.</param>
+        /// <param name="template">The string template.</param>
+        /// <param name="parameters">A dictionary that contains a collection of parameter name/value pairs.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task<T> GetWithRetryAsync<T>(Uri baseUri, UriTemplate template, Dictionary<string, string> parameters)
         {
             Uri uri = template.BindByName(baseUri, parameters);
             string jsonContent = string.Empty;
             T content = default(T);
 
-            if (xRateLimitRemaining < 10) await Task.Delay(2000);
+            if (xRateLimitRemaining < 10)
+            {
+                await Task.Delay(2000);
+            }
 
-            var response = await InvokeWebOperationWithRetry<HttpResponseMessage>( async () =>
+            var response = await InvokeWebOperationWithRetryAsync(async () =>
+            {
+                IEnumerable<string> headers = null;
+                var httpResponse = await httpClient.GetAsync(uri);
+
+                if (httpResponse.Headers.TryGetValues("X-RateLimit-Remaining", out headers))
                 {
-                    IEnumerable<string> headers = null;
-                    var httpResponse = await httpClient.GetAsync(uri);
-
-                    if (httpResponse.Headers.TryGetValues("X-RateLimit-Remaining", out headers))
-                    {
-                        xRateLimitRemaining = int.Parse(headers.First());
-                        Debug.WriteLine(string.Format("X-RateLimit-Remaining: {0}", xRateLimitRemaining.ToString()));
-                    }
-
-                    if (httpResponse.Headers.TryGetValues("X-Total-Count", out headers))
-                    {
-                        var xTotalCount = int.Parse(headers.First());
-                        Debug.WriteLine(string.Format("X-Total-Count: {0}", xTotalCount.ToString()));
-                    }
-
-                    httpResponse.EnsureSuccessStatusCode();
-                    return httpResponse;                    
+                    xRateLimitRemaining = int.Parse(headers.First());
+                    Debug.WriteLine(string.Format("X-RateLimit-Remaining: {0}", xRateLimitRemaining.ToString()));
                 }
-            );
+
+                if (httpResponse.Headers.TryGetValues("X-Total-Count", out headers))
+                {
+                    var xTotalCount = int.Parse(headers.First());
+                    Debug.WriteLine(string.Format("X-Total-Count: {0}", xTotalCount.ToString()));
+                }
+
+                httpResponse.EnsureSuccessStatusCode();
+                return httpResponse;
+            });
 
             jsonContent = await response.Content.ReadAsStringAsync();
 
@@ -83,7 +96,55 @@ namespace MeetupLibrary
             return content;
         }
 
-        private async static Task<T> InvokeWebOperationWithRetry<T>(Func<Task<T>> retriableOperation)
+        /// <summary>
+        /// Propagates notification that operations should be canceled.
+        /// </summary>
+        public void Cancel()
+        {
+            cts.Cancel();
+            cts.Dispose();
+
+            // Re-create the CancellationTokenSource.
+            cts = new CancellationTokenSource();
+        }
+
+        /// <summary>
+        /// Use this method to close or release unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Use this method to close or release unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">Boolean value.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (httpClient != null)
+                {
+                    httpClient.Dispose();
+                    httpClient = null;
+                }
+
+                if (cts != null)
+                {
+                    cts.Dispose();
+                    cts = null;
+                }
+            }
+        }
+
+        private static bool IsTransientException(Exception ex)
+        {
+            return true;
+        }
+
+        private static async Task<T> InvokeWebOperationWithRetryAsync<T>(Func<Task<T>> retriableOperation)
         {
             int baselineDelay = 1000;
             const int maxAttempts = 4;
@@ -116,33 +177,6 @@ namespace MeetupLibrary
 
             // The logic above assures that this exception will never be thrown.
             throw new InvalidOperationException("This exception statement should never be thrown.");
-        }
-
-        private static bool IsTransientException(Exception ex)
-        { 
-            return true;
-            //throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            //if (filter != null)
-            //{
-            //    filter.Dispose();
-            //    filter = null;
-            //}
-
-            if (httpClient != null)
-            {
-                httpClient.Dispose();
-                httpClient = null;
-            }
-
-            if (cts != null)
-            {
-                cts.Dispose();
-                cts = null;
-            }
         }
     }
 }

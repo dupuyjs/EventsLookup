@@ -10,35 +10,29 @@
 
 namespace MeetupLibrary.Models
 {
-    using Newtonsoft.Json;
-
     /// <summary>
-    /// A class that represents a photo.
+    /// Ordering enumeration.
     /// </summary>
-    public class Photo
+    public enum OrderingEnum
     {
         /// <summary>
-        /// Gets photo identifier.
+        /// Order by distance.
         /// </summary>
-        [JsonProperty("id")]
-        public int Id { get; internal set; }
+        Distance,
 
         /// <summary>
-        /// Gets URL for the photo at its maximum size.
+        /// Order by date group was founded.
         /// </summary>
-        [JsonProperty("highres_link")]
-        public string HighresLink { get; internal set; }
+        Newest,
 
         /// <summary>
-        /// Gets URL for a standard size of the photo.
+        /// Order by number of members.
         /// </summary>
-        [JsonProperty("photo_link")]
-        public string PhotoLink { get; internal set; }
+        Members,
 
         /// <summary>
-        /// Gets URL for a thumbnail of the photo.
+        /// Order by group with most active members.
         /// </summary>
-        [JsonProperty("thumb_link")]
-        public string ThumbLink { get; internal set; }
+        MostActive
     }
 }

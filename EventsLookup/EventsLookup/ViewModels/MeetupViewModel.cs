@@ -4,6 +4,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Threading;
 using GalaSoft.MvvmLight.Views;
 using MeetupLibrary;
+using MeetupLibrary.Helpers;
 using MeetupLibrary.Models;
 using Microsoft.Practices.ServiceLocation;
 using System;
@@ -33,13 +34,22 @@ namespace EventsLookup.ViewModels
         {
             get
             {
-                return this._meetupProxy ?? (_meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey));
+                if (this._meetupProxy != null)
+                {
+                    return this._meetupProxy;
+                }
+                else
+                {
+                    return _meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey);
+                }
             }
         }
 
         #endregion
 
         #region Properties
+
+        public bool IsInitialized { get; set; }
 
         private List<Group> _groups = null;
         public List<Group> Groups
@@ -235,8 +245,8 @@ namespace EventsLookup.ViewModels
             }
         }
 
-        private Dictionary<string, string> _ordering = null;
-        public Dictionary<string, string> Ordering
+        private Dictionary<string, OrderingEnum> _ordering = null;
+        public Dictionary<string, OrderingEnum> Ordering
         {
             get
             {
@@ -252,8 +262,8 @@ namespace EventsLookup.ViewModels
             }
         }
 
-        string _selectedOrdering = string.Empty;
-        public string SelectedOrdering
+        OrderingEnum _selectedOrdering;
+        public OrderingEnum SelectedOrdering
         {
             get
             {
@@ -426,27 +436,55 @@ namespace EventsLookup.ViewModels
 
         public MeetupViewModel()
         {
-            Task.Run(() => Initialize());
+            //Task.Run(() => Initialize());
         }
 
         #region Initialization
 
+
+        public bool IsValidOAuthKey()
+        {
+            if (Keys.MeetupApiKey.Equals("YourApiKey"))
+            {
+                Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                string key = (string)localSettings.Values["MeetupApiKey"];
+
+                if (key == null || key.Equals("YourApiKey"))
+                {
+                    return false;
+                }
+                else
+                {
+                    Keys.MeetupApiKey = key;
+                }
+            }
+
+            return true;
+        }
+
         public async Task<bool> Initialize()
         {
+            if (!IsValidOAuthKey())
+            {
+                var loader = new ResourceLoader("Errors");
+                DialogService.DisplayError(loader.GetString("Key/Message"), loader.GetString("Key/Caption"), "");
+                return false;
+            }
+
             try
             {
                 this.Favorites = Favorite.GetDefaultFavorites();
 
-                Member member = await MeetupProxy.GetUserProfile();
+                Member member = await MeetupProxy.GetUserProfileAsync();
                 this.User = member;
 
-                var calendar = await MeetupProxy.GetUserCalendar(member.Id);
+                var calendar = await MeetupProxy.GetUserCalendarAsync(member.Id);
                 this.Calendar = calendar.Results;
 
-                var cities = await MeetupProxy.GetCities();
+                var cities = await MeetupProxy.GetCitiesAsync();
                 this.Cities = cities.Results;
 
-                var categories = await MeetupProxy.GetCategories();
+                var categories = await MeetupProxy.GetCategoriesAsync();
                 this.Categories = categories.Results;
 
                 var ordering = MeetupLibrary.Models.Ordering.GetItems();
@@ -454,7 +492,7 @@ namespace EventsLookup.ViewModels
 
                 this.SelectedCity = "meetup1";
                 this.SelectedCategory = 34;
-                this.SelectedOrdering = "most_active";
+                this.SelectedOrdering = OrderingEnum.MostActive;
 
                 this.IsUserMeetupsEmpty = (Calendar.Count == 0) ? true : false;
 
@@ -466,6 +504,7 @@ namespace EventsLookup.ViewModels
                 DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
             }
 
+            IsInitialized = true;
             return true;
         }
 
@@ -477,7 +516,7 @@ namespace EventsLookup.ViewModels
         {
             try
             {
-                var topics = await MeetupProxy.GetTopics(Keywords);
+                var topics = await MeetupProxy.GetTopicsAsync(Keywords);
                 this.Topics = topics;
                 this.SelectedTopic = topics.First().Id;
             }
@@ -490,14 +529,14 @@ namespace EventsLookup.ViewModels
 
         #endregion
 
-        public async Task<bool> GetGroups(int topicId, string zip, int categoryId, bool upcomingOnly, string ordering)
+        public async Task<bool> GetGroups(int topicId, string zip, int categoryId, bool upcomingOnly, OrderingEnum ordering)
         {
             try
             {
                 List<Group> groups = null;
                 List<Event> meetups = new List<Event>();
 
-                groups = await MeetupProxy.GetGroups(topicId, zip, categoryId, upcomingOnly, ordering);
+                groups = await MeetupProxy.GetGroupsAsync(topicId, zip, categoryId, upcomingOnly, ordering);
 
                 this.Groups = groups;
                 this.GroupsCount= groups.Count();
@@ -516,7 +555,7 @@ namespace EventsLookup.ViewModels
                         }
                         else
                         {
-                            events = (await MeetupProxy.GetEvents(item.Id)).Results;
+                            events = (await MeetupProxy.GetEventsAsync(item.Id)).Results;
                             CacheManager.Add(item.Id, events);
                         }
 
@@ -550,7 +589,7 @@ namespace EventsLookup.ViewModels
             var zip = this.SelectedCity;
             var ordering = this.SelectedOrdering;
 
-            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
+            if (favorite != null) await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
 
             this.IsLoading = false;
         }
@@ -563,7 +602,7 @@ namespace EventsLookup.ViewModels
             var zip = this.SelectedCity;
             var ordering = this.SelectedOrdering;
 
-            await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
+            if (favorite != null)  await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
         }
 
         public async void OnSubmit(object sender, RoutedEventArgs e)

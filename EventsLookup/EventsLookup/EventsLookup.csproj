@@ -11,8 +11,8 @@
     <AssemblyName>EventsLookup</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10586.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -79,6 +79,8 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -98,6 +100,7 @@
     <None Include="project.json" />
     <Content Include="Assets\Commons\AppHeader.png" />
     <Content Include="Assets\Commons\Calendar.png" />
+    <Content Include="Assets\Commons\drums.jpg" />
     <Content Include="Assets\Commons\Follow.png" />
     <None Include="Package.StoreAssociation.xml" />
     <Content Include="Assets\Commons\Plane.png" />
@@ -117,6 +120,7 @@
     <Compile Include="Converters\IntegerConverter.cs" />
     <Compile Include="Converters\DateFormatter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Converters\OrderingEnumConverter.cs" />
     <Compile Include="Helpers\HtmlStringExtension.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Models\Favorite.cs" />

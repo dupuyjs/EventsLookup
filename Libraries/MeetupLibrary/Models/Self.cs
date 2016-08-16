@@ -13,32 +13,14 @@ namespace MeetupLibrary.Models
     using Newtonsoft.Json;
 
     /// <summary>
-    /// A class that represents a photo.
+    /// A class that represents details particular to the authorized user.
     /// </summary>
-    public class Photo
+    public class Self
     {
         /// <summary>
-        /// Gets photo identifier.
+        /// Gets what the authorized user and queried member have in common.
         /// </summary>
-        [JsonProperty("id")]
-        public int Id { get; internal set; }
-
-        /// <summary>
-        /// Gets URL for the photo at its maximum size.
-        /// </summary>
-        [JsonProperty("highres_link")]
-        public string HighresLink { get; internal set; }
-
-        /// <summary>
-        /// Gets URL for a standard size of the photo.
-        /// </summary>
-        [JsonProperty("photo_link")]
-        public string PhotoLink { get; internal set; }
-
-        /// <summary>
-        /// Gets URL for a thumbnail of the photo.
-        /// </summary>
-        [JsonProperty("thumb_link")]
-        public string ThumbLink { get; internal set; }
+        [JsonProperty("common")]
+        public Common Common { get; internal set; }
     }
 }

@@ -10,24 +10,10 @@
 
 namespace MeetupLibrary.Models
 {
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
-
     /// <summary>
-    /// A class that represents Categories response.
+    /// A class that represents third-party services associated with the member account.
     /// </summary>
-    public class CategoriesResponse
+    public class OtherServices
     {
-        /// <summary>
-        /// Gets list of the Category items.
-        /// </summary>
-        [JsonProperty("results")]
-        public List<Category> Results { get; internal set; }
-
-        /// <summary>
-        /// Gets additional information about the response.
-        /// </summary>
-        [JsonProperty("meta")]
-        public Meta Meta { get; internal set; }
     }
 }

@@ -2,21 +2,10 @@
 using MeetupLibrary.Models;
 using Microsoft.Practices.ServiceLocation;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
+using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Security.Authentication.Web;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -40,6 +29,11 @@ namespace EventsLookup.Views
             {
                 return ServiceLocator.Current.GetInstance<MeetupViewModel>();
             }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            Task.Run(() => Default.Initialize());
         }
 
         public MeetupPage()
