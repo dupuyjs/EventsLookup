@@ -11,8 +11,8 @@
     /// </summary>
     public class Group : INotifyPropertyChanged
     {
-        private List<Event> allEvents = null;
-        private bool isEventsVisible = false;
+        private List<Event> _allEvents = null;
+        private bool _isEventsVisible = false;
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -164,20 +164,20 @@
         public List<Photo> Photos { get; internal set; }
 
         /// <summary>
-        /// Gets all upcoming events.
+        /// Gets or sets all upcoming events.
         /// </summary>
         public List<Event> AllEvents
         {
             get
             {
-                return this.allEvents;
+                return _allEvents;
             }
 
-            internal set
+            set
             {
-                this.allEvents = value;
-                this.NotifyPropertyChanged("AllEvents");
-                this.NotifyPropertyChanged("EventsCount");
+                _allEvents = value;
+                NotifyPropertyChanged("AllEvents");
+                NotifyPropertyChanged("EventsCount");
             }
         }
 
@@ -188,30 +188,30 @@
         {
             get
             {
-                return this.allEvents?.Count ?? 0;
+                return _allEvents?.Count ?? 0;
             }
         }
 
         /// <summary>
-        /// Gets a value indicating whether upcoming events are visible or not.
+        /// Gets or sets a value indicating whether upcoming events are visible or not.
         /// </summary>
         public bool IsEventsVisible
         {
             get
             {
-                return this.isEventsVisible;
+                return _isEventsVisible;
             }
 
-            internal set
+            set
             {
-                this.isEventsVisible = value;
-                this.NotifyPropertyChanged("IsEventsVisible");
+                _isEventsVisible = value;
+                NotifyPropertyChanged("IsEventsVisible");
             }
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

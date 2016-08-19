@@ -13,6 +13,8 @@
             <TextBlock Text="OAuth Key" Margin="0,0,0,4"/>
             <PasswordBox x:Name="passwordBox" Width="400" HorizontalAlignment="Left" Password="YourApiKey" PasswordRevealMode="Peek" Margin="0,0,0,4"/>
             <Button Content="Save" Width="200" Background="{ThemeResource ThemeRedHigh1ColorBrush}" RequestedTheme="Dark"/>
+            <WebView x:Name="Test" Width="400" Height="600"/>
+            <Button Content="Login" Click="Button_Click"/>
         </StackPanel>
     </Grid>
 </Page>

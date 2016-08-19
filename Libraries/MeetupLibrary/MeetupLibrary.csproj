@@ -38,8 +38,11 @@
     <CodeAnalysisRuleSet>MeetupLibrary.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Authentication\MeetupOAuthService.cs" />
+    <Compile Include="Authentication\MeetupOAuthTokens.cs" />
     <Compile Include="Helpers\MicrosecondEpochConverter.cs" />
     <Compile Include="Models\Common.cs" />
+    <Compile Include="Models\GroupsResponse.cs" />
     <Compile Include="Models\Ordering.cs" />
     <Compile Include="Helpers\UriTemplate.cs" />
     <Compile Include="IMeetupClient.cs" />

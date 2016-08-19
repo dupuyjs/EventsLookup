@@ -20,7 +20,7 @@ namespace MeetupLibrary.Models
     /// </summary>
     public class Member : INotifyPropertyChanged
     {
-        private string name = string.Empty;
+        private string _name = string.Empty;
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -41,13 +41,13 @@ namespace MeetupLibrary.Models
         {
             get
             {
-                return this.name;
+                return _name;
             }
 
             internal set
             {
-                this.name = value;
-                this.NotifyPropertyChanged("Name");
+                _name = value;
+                NotifyPropertyChanged("Name");
             }
         }
 
@@ -139,7 +139,7 @@ namespace MeetupLibrary.Models
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

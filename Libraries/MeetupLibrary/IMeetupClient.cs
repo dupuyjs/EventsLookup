@@ -41,8 +41,8 @@ namespace MeetupLibrary
         /// <param name="upcomingOnly">If true, filters text and category based searches on groups that have upcoming events. Defaults to false.</param>
         /// <param name="ordering">An <see cref="OrderingEnum"/> enumeration value.</param>
         /// <param name="country">A valid two character country code, defaults to fr.</param>
-        /// <returns>List of <see cref="Group"/> objects.</returns>
-        Task<List<Group>> GetGroupsAsync(int topicId, string zip, int? category, bool upcomingOnly, OrderingEnum ordering = OrderingEnum.MostActive, string country = "fr");
+        /// <returns>A <see cref="GroupsResponse"/> object.</returns>
+        Task<GroupsResponse> GetGroupsAsync(int topicId, string zip, int? category, bool upcomingOnly, OrderingEnum ordering = OrderingEnum.MostActive, string country = "fr");
 
         /// <summary>
         /// Returns Meetup events.

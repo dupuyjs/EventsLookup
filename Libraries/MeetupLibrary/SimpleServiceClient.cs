@@ -18,6 +18,7 @@ namespace MeetupLibrary
     using System.Threading;
     using System.Threading.Tasks;
     using MeetupLibrary.Helpers;
+    using Models;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -48,10 +49,13 @@ namespace MeetupLibrary
         /// <param name="parameters">A dictionary that contains a collection of parameter name/value pairs.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task<T> GetWithRetryAsync<T>(Uri baseUri, UriTemplate template, Dictionary<string, string> parameters)
+            where T : class, new()
         {
             Uri uri = template.BindByName(baseUri, parameters);
             string jsonContent = string.Empty;
-            T content = default(T);
+            int xTotalCount = 0;
+
+            T content = null;
 
             if (xRateLimitRemaining < 10)
             {
@@ -71,7 +75,7 @@ namespace MeetupLibrary
 
                 if (httpResponse.Headers.TryGetValues("X-Total-Count", out headers))
                 {
-                    var xTotalCount = int.Parse(headers.First());
+                    xTotalCount = int.Parse(headers.First());
                     Debug.WriteLine(string.Format("X-Total-Count: {0}", xTotalCount.ToString()));
                 }
 
@@ -86,7 +90,18 @@ namespace MeetupLibrary
 
             try
             {
-                content = JsonConvert.DeserializeObject<T>(jsonContent, settings);
+                if (typeof(T) == typeof(GroupsResponse))
+                {
+                    var groups = JsonConvert.DeserializeObject<List<Group>>(jsonContent, settings);
+
+                    content = new T();
+                    (content as GroupsResponse).Results = groups;
+                    (content as GroupsResponse).TotalCount = xTotalCount;
+                }
+                else
+                {
+                    content = JsonConvert.DeserializeObject<T>(jsonContent, settings);
+                }
             }
             catch (Exception ex)
             {

@@ -49,7 +49,7 @@ namespace MeetupLibrary.Models
         /// </summary>
         /// <param name="ordering">User friendly string.</param>
         /// <returns><see cref="OrderingEnum"/> enumeration value.</returns>
-        public static OrderingEnum? ToOrdering(this string ordering)
+        public static OrderingEnum ToOrdering(this string ordering)
         {
             if (string.Equals(ordering, OrderingEnum.Distance.ToFriendlyString()))
             {
@@ -71,21 +71,21 @@ namespace MeetupLibrary.Models
                 return OrderingEnum.MostActive;
             }
 
-            return null;
+            return OrderingEnum.MostActive;
         }
 
         /// <summary>
         /// Gets OrderingEnums items.
         /// </summary>
         /// <returns>A dictionary with OrderingEnum items and friendly names associated.</returns>
-        public static Dictionary<string, OrderingEnum> GetItems()
+        public static Dictionary<string, string> GetItems()
         {
-            var items = new Dictionary<string, OrderingEnum>();
+            var items = new Dictionary<string, string>();
 
-            items.Add("Distance", OrderingEnum.Distance);
-            items.Add("Newest", OrderingEnum.Newest);
-            items.Add("Most Active", OrderingEnum.MostActive);
-            items.Add("Members", OrderingEnum.Members);
+            items.Add("Distance", OrderingEnum.Distance.ToFriendlyString());
+            items.Add("Newest", OrderingEnum.Newest.ToFriendlyString());
+            items.Add("Most Active", OrderingEnum.MostActive.ToFriendlyString());
+            items.Add("Members", OrderingEnum.Members.ToFriendlyString());
 
             return items;
         }

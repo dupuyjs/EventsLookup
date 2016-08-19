@@ -11,32 +11,35 @@
 namespace EventsLookup.Converters
 {
     using System;
-    using Windows.UI.Xaml;
+    using System.Globalization;
     using Windows.UI.Xaml.Data;
 
     /// <summary>
-    /// Binding converter to convert a boolean value into a Visibility enumeration.
+    /// Binding converter to display a formatted string.
     /// </summary>
-    public class BoolToVisibilityConverter : IValueConverter
+    public class StringFormatConverter : IValueConverter
     {
         /// <summary>
-        /// Converts a boolean value into a Visibility enumeration.
+        /// Return the formatted string version of the source object.
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>
         /// <param name="parameter">The converter parameter to use.</param>
         /// <param name="language">The culture to use in the converter.</param>
-        /// <returns>A <see cref="Visibility"/> value.</returns>
+        /// <returns>Formatted string.</returns>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            Visibility visibility = Visibility.Collapsed;
-
-            if (value is bool && (bool)value)
+            if (parameter != null)
             {
-                visibility = Visibility.Visible;
+                string formatString = parameter as string;
+
+                if (!string.IsNullOrEmpty(formatString))
+                {
+                    return string.Format(formatString, value);
+                }
             }
 
-            return visibility;
+            return value.ToString();
         }
 
         /// <summary>

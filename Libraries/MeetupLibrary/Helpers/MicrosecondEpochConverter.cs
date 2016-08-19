@@ -19,7 +19,7 @@ namespace MeetupLibrary.Helpers
     /// </summary>
     public class MicrosecondEpochConverter : DateTimeConverterBase
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime _epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         /// <summary>
         ///  Writes the JSON representation of the object.
@@ -29,7 +29,7 @@ namespace MeetupLibrary.Helpers
         /// <param name="serializer">The calling serializer</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteRawValue(((DateTime)value - Epoch).TotalMilliseconds + "000");
+            writer.WriteRawValue(((DateTime)value - _epoch).TotalMilliseconds + "000");
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace MeetupLibrary.Helpers
                 return null;
             }
 
-            return Epoch.AddMilliseconds((long)reader.Value);
+            return _epoch.AddMilliseconds((long)reader.Value);
         }
     }
 }

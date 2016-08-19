@@ -19,8 +19,8 @@ namespace MeetupLibrary.Helpers
     /// </summary>
     public class UriTemplate
     {
-        private const string ParameterPattern = @"\{[a-z, A-Z, _, \[, \]]*\}";
-        private const string QueryParameterPattern = @"[\?, &][a-z, A-Z, _, \[, \]]*=" + ParameterPattern;
+        private const string _parameterPattern = @"\{[a-z, A-Z, _, \[, \]]*\}";
+        private const string _queryParameterPattern = @"[\?, &][a-z, A-Z, _, \[, \]]*=" + _parameterPattern;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UriTemplate"/> class.
@@ -54,7 +54,7 @@ namespace MeetupLibrary.Helpers
             }
 
             // There should be any unsubstituted variable in path segment anymore
-            if (Regex.IsMatch(pathSegment, UriTemplate.ParameterPattern))
+            if (Regex.IsMatch(pathSegment, UriTemplate._parameterPattern))
             {
                 throw new ArgumentException("One or more path segment parameter values were missing. All path segment parameters must be substituted.");
             }
@@ -66,7 +66,7 @@ namespace MeetupLibrary.Helpers
             }
 
             // Remove unsubstituted query parameter "parameter=value" pairs
-            foreach (Match match in Regex.Matches(querySegment, UriTemplate.QueryParameterPattern))
+            foreach (Match match in Regex.Matches(querySegment, UriTemplate._queryParameterPattern))
             {
                 querySegment = querySegment.Replace(match.Value, string.Empty);
             }

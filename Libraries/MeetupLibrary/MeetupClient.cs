@@ -21,8 +21,8 @@ namespace MeetupLibrary
     /// </summary>
     public sealed class MeetupClient : SimpleServiceClient, IMeetupClient
     {
-        private Uri hostUri = new Uri("https://api.meetup.com");
-        private string apikey;
+        private Uri _hostUri = new Uri("https://api.meetup.com");
+        private string _apikey;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeetupClient"/> class.
@@ -30,7 +30,7 @@ namespace MeetupLibrary
         /// <param name="apiKey">Meetup oauth api key.</param>
         internal MeetupClient(string apiKey)
         {
-            this.apikey = apiKey;
+            _apikey = apiKey;
         }
 
         /// <summary>
@@ -40,11 +40,11 @@ namespace MeetupLibrary
         public async Task<CategoriesResponse> GetCategoriesAsync()
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
 
             var template = new UriTemplate("/2/categories?key={apikey}&sign=true");
 
-            return await this.GetWithRetryAsync<CategoriesResponse>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<CategoriesResponse>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace MeetupLibrary
 
             var template = new UriTemplate("/2/cities?country={country}&order=size&page=50");
 
-            return await this.GetWithRetryAsync<CitiesResponse>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<CitiesResponse>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -71,11 +71,11 @@ namespace MeetupLibrary
         /// <param name="upcomingOnly">If true, filters text and category based searches on groups that have upcoming events. Defaults to false.</param>
         /// <param name="ordering">An <see cref="OrderingEnum"/> enumeration value.</param>
         /// <param name="country">A valid two character country code, defaults to fr.</param>
-        /// <returns>List of <see cref="Group"/> objects.</returns>
-        public async Task<List<Group>> GetGroupsAsync(int topicId, string zip, int? category, bool upcomingOnly, OrderingEnum ordering = OrderingEnum.MostActive, string country = "fr")
+        /// <returns>A <see cref="GroupsResponse"/> object.</returns>
+        public async Task<GroupsResponse> GetGroupsAsync(int topicId, string zip, int? category, bool upcomingOnly, OrderingEnum ordering = OrderingEnum.MostActive, string country = "fr")
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
             parameters.Add("topicid", topicId.ToString());
 
             if (!string.IsNullOrWhiteSpace(zip))
@@ -96,9 +96,9 @@ namespace MeetupLibrary
             parameters.Add("upcomingonly", upcomingOnly.ToString());
             parameters.Add("ordering", ordering.ToFriendlyString());
 
-            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=200&sign=true");
+            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=50&sign=true");
 
-            return await this.GetWithRetryAsync<List<Group>>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<GroupsResponse>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -109,12 +109,12 @@ namespace MeetupLibrary
         public async Task<EventsResponse> GetEventsAsync(int groupId)
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
             parameters.Add("groupId", groupId.ToString());
 
             var template = new UriTemplate("/2/events?key={apikey}&group_id={groupId}&sign=true");
 
-            return await this.GetWithRetryAsync<EventsResponse>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace MeetupLibrary
         public async Task<List<Topic>> GetTopicsAsync(string query, string lang = "en-US")
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -140,7 +140,7 @@ namespace MeetupLibrary
 
             var template = new UriTemplate("/recommended/group_topics?key={apikey}&text={query}&lang={lang}&sign=true");
 
-            return await this.GetWithRetryAsync<List<Topic>>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<List<Topic>>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -150,11 +150,11 @@ namespace MeetupLibrary
         public async Task<Member> GetUserProfileAsync()
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
 
             var template = new UriTemplate("/2/member/self?key={apikey}");
 
-            return await this.GetWithRetryAsync<Member>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<Member>(_hostUri, template, parameters);
         }
 
         /// <summary>
@@ -165,12 +165,12 @@ namespace MeetupLibrary
         public async Task<EventsResponse> GetUserCalendarAsync(int memberId)
         {
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", this.apikey);
+            parameters.Add("apikey", _apikey);
             parameters.Add("memberId", memberId.ToString());
 
             var template = new UriTemplate("/2/events?key={apikey}&member_id={memberId}&rsvp=yes,maybe,waitlist&sign=true");
 
-            return await this.GetWithRetryAsync<EventsResponse>(this.hostUri, template, parameters);
+            return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }
     }
 }

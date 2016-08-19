@@ -11,16 +11,18 @@
 namespace EventsLookup.Converters
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Data;
 
     /// <summary>
-    /// Binding converter to convert a boolean value into a Visibility enumeration.
+    /// Binding converter to convert a collection into a Visibility enumeration.
     /// </summary>
-    public class BoolToVisibilityConverter : IValueConverter
+    public class CollectionToVisibilityConverter : IValueConverter
     {
         /// <summary>
-        /// Converts a boolean value into a Visibility enumeration.
+        /// Converts a collection into a Visibility enumeration.
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>
@@ -29,11 +31,12 @@ namespace EventsLookup.Converters
         /// <returns>A <see cref="Visibility"/> value.</returns>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            Visibility visibility = Visibility.Collapsed;
+            Visibility visibility = Visibility.Visible;
+            IEnumerable<object> collection = value as IEnumerable<object>;
 
-            if (value is bool && (bool)value)
+            if (collection != null && collection.Any())
             {
-                visibility = Visibility.Visible;
+                visibility = Visibility.Collapsed;
             }
 
             return visibility;
