@@ -1,26 +1,43 @@
 #Events Lookup
 
-Application Windows 10 UWP pour consulter facilement les prochains meetups.
+This application demonstrates usage of Meetup API with a Universal Windows Application. 
+Don't hesite to contribute, report issue or request feature on GitHub.
 
-![Image of EventsLookup](https://blogmedia.blob.core.windows.net/images/Lookup.png)
+![Image of EventsLookup](./EventsLookup/EventsLookup/Assets/Commons/Design/Screenshot-1.png)
+![Image of EventsLookup](./EventsLookup/EventsLookup/Assets/Commons/Design/Screenshot-2.png)
 
 ### Getting Started
-Pour l'utiliser, suivez simplement les étapes suivantes:
 
-1. Clonez le projet Events Lookups
-2. Créer un compte sur http://www.meetup.com
-3. Rendez-vous ensuite sur la page https://secure.meetup.com/fr-FR/meetup_api/key/
-4. Copiez la clé pour accéder aux API de Meetup
-5. Collez la clé dans le fichier Keys.cs
+1. Sign-Up on http://www.meetup.com
+2. Navigate to https://secure.meetup.com/fr-FR/meetup_api/oauth_consumers/ page.
+3. Fill the Redirect Uri TextBox with your Package SID (for example 
+ms-app://s-x-xx-x-xxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx/).
+4. Paste Consumer Key, Secret Key and the Package SID into Keys.cs file.
 
 ```
     namespace EventsLookup.Helpers
     {
+        /// <summary>
+        /// A class that represents OAuth Keys
+        /// </summary>
         public static class Keys
         {
-            public const string MeetupApiKey = @"YourApiKey";
-        }
+            /// <summary>
+            /// Gets Consumer Key
+            /// </summary>
+            public static string ConsumerKey => @"ConsumerKey";
+
+            /// <summary>
+            /// Gets Consumer Secret
+            /// </summary>
+            public static string ConsumerSecret => @"ConsumerSecret";
+
+            /// <summary>
+            /// Gets Windows Store Id (used for redirection)
+            /// </summary>
+            public static string WindowsStoreId => @"WindowsStoreId";
     }
+}
 ```
 
-Compilez ! Le tour est joué.
+Compile the code and run the application.
