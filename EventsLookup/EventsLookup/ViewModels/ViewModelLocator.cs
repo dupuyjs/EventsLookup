@@ -1,14 +1,11 @@
-﻿using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Ioc;
-using Microsoft.Practices.ServiceLocation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventsLookup.ViewModels
+﻿namespace EventsLookup.ViewModels
 {
+    using GalaSoft.MvvmLight.Ioc;
+    using Microsoft.Practices.ServiceLocation;
+
+    /// <summary>
+    /// ViewModelLocator
+    /// </summary>
     public class ViewModelLocator
     {
         static ViewModelLocator()
@@ -17,6 +14,9 @@ namespace EventsLookup.ViewModels
             SimpleIoc.Default.Register<MeetupViewModel>();
         }
 
+        /// <summary>
+        /// Gets MeetupViewModel default instance.
+        /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This non-static member is needed for data binding purposes.")]
         public MeetupViewModel Meetup => ServiceLocator.Current.GetInstance<MeetupViewModel>();
     }

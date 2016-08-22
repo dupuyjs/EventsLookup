@@ -1,30 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-
-namespace EventsLookup.Helpers
+﻿namespace EventsLookup.Helpers
 {
-    class HtmlStringExtension
+    using Windows.UI.Xaml;
+    using Windows.UI.Xaml.Controls;
+
+    /// <summary>
+    /// Attached Property for WebView control.
+    /// </summary>
+    public class HtmlStringExtension
     {
-        // "HtmlString" attached property for a WebView
+        /// <summary>
+        /// HtmlString Property - Add navigation to a specific Html string source.
+        /// </summary>
         public static readonly DependencyProperty HtmlStringProperty =
-           DependencyProperty.RegisterAttached("HtmlString", typeof(string), typeof(HtmlStringExtension), new PropertyMetadata("", OnHtmlStringChanged));
+           DependencyProperty.RegisterAttached("HtmlString", typeof(string), typeof(HtmlStringExtension), new PropertyMetadata(string.Empty, OnHtmlStringChanged));
 
-        // Getter and Setter
-        public static string GetHtmlString(DependencyObject obj) { return (string)obj.GetValue(HtmlStringProperty); }
-        public static void SetHtmlString(DependencyObject obj, string value) { obj.SetValue(HtmlStringProperty, value); }
+        /// <summary>
+        /// Gets Html string source.
+        /// </summary>
+        /// <param name="obj">The dependency object.</param>
+        /// <returns>The Html string.</returns>
+        public static string GetHtmlString(DependencyObject obj)
+        {
+            return (string)obj.GetValue(HtmlStringProperty);
+        }
 
-        // Handler for property changes in the DataContext : set the WebView
+        /// <summary>
+        /// Sets Html string source.
+        /// </summary>
+        /// <param name="obj">The dependency object.</param>
+        /// <param name="value">The Html string.</param>
+        public static void SetHtmlString(DependencyObject obj, string value)
+        {
+            obj.SetValue(HtmlStringProperty, value);
+        }
+
         private static void OnHtmlStringChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            WebView wv = d as WebView;
-            if (wv != null)
+            WebView webView = d as WebView;
+            if (webView != null)
             {
-                wv.NavigateToString((string)e.NewValue);
+                webView.NavigateToString((string)e.NewValue);
             }
         }
     }

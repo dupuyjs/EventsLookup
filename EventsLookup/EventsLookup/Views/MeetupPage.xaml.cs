@@ -1,12 +1,25 @@
-﻿namespace EventsLookup.Views
+﻿// ******************************************************************
+// THE CODE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+// THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
+// ******************************************************************
+
+namespace EventsLookup.Views
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using EventsLookup.ViewModels;
+    using Helpers;
     using MeetupLibrary.Models;
+    using MeetupLibrary.OAuth;
     using Microsoft.Practices.ServiceLocation;
     using Windows.Foundation;
+    using Windows.Security.Authentication.Web;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
@@ -42,14 +55,83 @@
         }
 
         /// <summary>
+        /// Starts the authentication operation.
+        /// </summary>
+        /// <returns>OAuth tokens.</returns>
+        public async Task<MeetupOAuthTokens> AuthenticateUser()
+        {
+            MeetupOAuthTokens tokens = null;
+
+            MeetupOAuthSettings settings = new MeetupOAuthSettings();
+            settings.ConsumerKey = Keys.ConsumerKey;
+            settings.ConsumerSecret = Keys.ConsumerSecret;
+            settings.WindowsStoreId = Keys.WindowsStoreId;
+
+            MeetupOAuthService.Instance.Initialize(settings);
+
+            WebAuthenticationResult authenticationResult = await WebAuthenticationBroker.AuthenticateAsync(
+                        WebAuthenticationOptions.None,
+                        MeetupOAuthService.Instance.GetLoginUrl(),
+                        new System.Uri(settings.WindowsStoreId));
+
+            if (authenticationResult.ResponseStatus == WebAuthenticationStatus.Success)
+            {
+                var responseData = authenticationResult.ResponseData;
+                var responseUri = new Uri(responseData);
+
+                var decoder = new WwwFormUrlDecoder(responseUri.Query);
+                var code = decoder.GetFirstValueByName("code");
+
+                tokens = await MeetupOAuthService.Instance.GetOAuthTokens(code);
+
+                Default.IsUserAuthenticated = true;
+            }
+
+            return tokens;
+        }
+
+        /// <summary>
         /// Invoked when the Page is loaded and becomes the current source of a parent Frame.
         /// </summary>
         /// <param name="e">Event data that can be examined by overriding code.</param>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (!Default.IsDataLoaded)
+            if (!Default.IsUserAuthenticated)
+            {
+                var tokens = await AuthenticateUser();
+            }
+
+            if (!Default.IsDataLoaded && Default.IsUserAuthenticated)
             {
                 Task.Run(() => Default.Initialize());
+            }
+        }
+
+        private static Rect GetElementRect(FrameworkElement element)
+        {
+            GeneralTransform buttonTransform = element.TransformToVisual(null);
+            Point point = buttonTransform.TransformPoint(default(Point));
+            return new Rect(point, new Size(element.ActualWidth, element.ActualHeight));
+        }
+
+        private static T FindParent<T>(UIElement child)
+            where T : DependencyObject
+        {
+            UIElement parentObject = (UIElement)VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null)
+            {
+                return null;
+            }
+
+            T parent = parentObject as T;
+            if (parent != null)
+            {
+                return parent;
+            }
+            else
+            {
+                return FindParent<T>(parentObject);
             }
         }
 
@@ -93,53 +175,28 @@
             }
         }
 
-        //private async void OnAddCalendar(object sender, TappedRoutedEventArgs e)
-        //{
-        //    ListView listView = FindParent<ListView>(sender as Image);
-        //    if (listView != null)
-        //    {
-        //        var item = (Event)listView.SelectedItem;
-
-        //        var appointment = new Windows.ApplicationModel.Appointments.Appointment();
-        //        appointment.Subject = item.Name;
-        //        appointment.Location = item.Venue?.Name ?? string.Empty;
-        //        appointment.StartTime = new DateTimeOffset(item.TimeWithOffset) ;
-        //        //if (item.Duration.HasValue) appointment.Duration = new TimeSpan(item.Duration.Value * 1000);
-        //        appointment.DetailsKind = Windows.ApplicationModel.Appointments.AppointmentDetailsKind.Html;
-        //        appointment.Details = item.Description;
-
-        //        // Get the selection rect of the button pressed to add this appointment
-        //        var rect = GetElementRect(sender as FrameworkElement);
-
-        //        // ShowAddAppointmentAsync returns an appointment id if the appointment given was added to the user's calendar.
-        //        // This value should be stored in app data and roamed so that the appointment can be replaced or removed in the future.
-        //        // An empty string return value indicates that the user canceled the operation before the appointment was added.
-        //        String appointmentId = await Windows.ApplicationModel.Appointments.AppointmentManager.ShowAddAppointmentAsync(
-        //                               appointment, rect, Windows.UI.Popups.Placement.Default);
-        //    }
-        //}
-
-        public static Rect GetElementRect(FrameworkElement element)
+        private async void OnAddCalendar(object sender, RoutedEventArgs e)
         {
-            GeneralTransform buttonTransform = element.TransformToVisual(null);
-            Point point = buttonTransform.TransformPoint(new Point());
-            return new Rect(point, new Size(element.ActualWidth, element.ActualHeight));
-        }
+            var button = sender as Button;
+            var context = button.DataContext;
 
-        public static T FindParent<T>(UIElement child) where T : DependencyObject
-        {
-            //get parent item
-            UIElement parentObject = (UIElement)VisualTreeHelper.GetParent(child);
+            if (context != null)
+            {
+                var item = context as Event;
 
-            //we've reached the end of the tree
-            if (parentObject == null) return null;
+                var appointment = new Windows.ApplicationModel.Appointments.Appointment();
+                appointment.Subject = item.Name;
+                appointment.Location = item.Venue?.Name ?? string.Empty;
+                appointment.StartTime = new DateTimeOffset(item.TimeWithOffset);
+                appointment.DetailsKind = Windows.ApplicationModel.Appointments.AppointmentDetailsKind.Html;
+                appointment.Details = item.Description;
 
-            //check if the parent matches the type we're looking for
-            T parent = parentObject as T;
-            if (parent != null)
-                return parent;
-            else
-                return FindParent<T>(parentObject);
+                // Get the selection rect of the button pressed to add this appointment
+                var rect = GetElementRect(sender as FrameworkElement);
+
+                string appointmentId = await Windows.ApplicationModel.Appointments.AppointmentManager.ShowAddAppointmentAsync(
+                                       appointment, rect, Windows.UI.Popups.Placement.Default);
+            }
         }
 
         private void SwitchView(object sender, RoutedEventArgs e)
@@ -150,7 +207,7 @@
 
                 calendarList.Visibility = Visibility.Collapsed;
                 groupsList.Visibility = Visibility.Visible;
-                groupSectionTitle.Text = "GROUPS";
+                groupSectionTitle.Text = ResourceHelper.GetResourceString("GroupsTitle/Text");
 
                 switchButton.Icon = new SymbolIcon(Symbol.Calendar);
             }
@@ -160,7 +217,7 @@
 
                 calendarList.Visibility = Visibility.Visible;
                 groupsList.Visibility = Visibility.Collapsed;
-                groupSectionTitle.Text = "CALENDAR";
+                groupSectionTitle.Text = ResourceHelper.GetResourceString("CalendarTitle/Text");
 
                 switchButton.Icon = new SymbolIcon(Symbol.AllApps);
             }
@@ -194,30 +251,6 @@
                 var eventUrl = new Uri(item.EventUrl);
 
                 var success = await Windows.System.Launcher.LaunchUriAsync(eventUrl);
-            }
-        }
-
-        private async void OnAddCalendar(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            var context = button.DataContext;
-
-            if (context != null)
-            {
-                var item = context as Event;
-
-                var appointment = new Windows.ApplicationModel.Appointments.Appointment();
-                appointment.Subject = item.Name;
-                appointment.Location = item.Venue?.Name ?? string.Empty;
-                appointment.StartTime = new DateTimeOffset(item.TimeWithOffset);
-                appointment.DetailsKind = Windows.ApplicationModel.Appointments.AppointmentDetailsKind.Html;
-                appointment.Details = item.Description;
-
-                // Get the selection rect of the button pressed to add this appointment
-                var rect = GetElementRect(sender as FrameworkElement);
-
-                string appointmentId = await Windows.ApplicationModel.Appointments.AppointmentManager.ShowAddAppointmentAsync(
-                                       appointment, rect, Windows.UI.Popups.Placement.Default);
             }
         }
     }

@@ -18,8 +18,8 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>EventsLookup_StoreKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <AppxBundle>Never</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <PackageCertificateThumbprint>A0BD8C7D123487C376060D02BFD2FE7E9D5ACCF4</PackageCertificateThumbprint>
     <AppxPackageDir>C:\Users\JDUPUY\Documents\Github\EventsLookup\EventsLookup\EventsLookup\AppPackages\Local</AppxPackageDir>
   </PropertyGroup>
@@ -107,6 +107,7 @@
     <None Include="EventsLookup_StoreKey.pfx" />
     <None Include="project.json" />
     <Content Include="Assets\Commons\AppHeader.png" />
+    <Content Include="Assets\Commons\AppLogo-Black.png" />
     <Content Include="Assets\Commons\Calendar.png" />
     <None Include="Package.StoreAssociation.xml" />
     <Content Include="Assets\Commons\CalendarPointerOver.png" />
@@ -126,20 +127,24 @@
       <DependentUpon>ProgressLogo.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\CollectionToBoolConverter.cs" />
     <Compile Include="Converters\CollectionToVisibilityConverter.cs" />
     <Compile Include="Converters\FavoriteConverter.cs" />
     <Compile Include="Converters\IntegerConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
-    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Helpers\HtmlStringExtension.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ResourceHelper.cs" />
+    <Compile Include="Helpers\SortHelper.cs" />
     <Compile Include="Models\Favorite.cs" />
     <Compile Include="Models\Navigation\NavType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DialogService\IDialogService.cs" />
     <Compile Include="ViewModels\MeetupViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
+    <Compile Include="Views\AboutPage.xaml.cs">
+      <DependentUpon>AboutPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MeetupPage.xaml.cs">
       <DependentUpon>MeetupPage.xaml</DependentUpon>
     </Compile>
@@ -226,6 +231,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Include="Views\AboutPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MeetupPage.xaml">
       <SubType>Designer</SubType>

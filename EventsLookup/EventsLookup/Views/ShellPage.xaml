@@ -93,18 +93,26 @@
                                 <nav:NavType Type="views:MeetupPage" />
                             </RadioButton.CommandParameter>
                             <RadioButton.Tag>
-                                <FontIcon FontSize="18" Glyph="&#xE8F3;" />
+                                <FontIcon FontSize="18" Glyph="&#xE7C5;" />
                             </RadioButton.Tag>
                         </RadioButton>
                     </StackPanel>
 
                     <StackPanel x:Name="SecondaryButtons" Grid.Row="2">
+                        <RadioButton Command="{x:Bind NavCommand}" x:Uid="About" Content="About" GroupName="Nav" HorizontalAlignment="Stretch" Height="48">
+                            <RadioButton.CommandParameter>
+                                <nav:NavType Type="views:AboutPage" />
+                            </RadioButton.CommandParameter>
+                            <RadioButton.Tag>
+                                <FontIcon FontSize="18" Glyph="&#xE897;" />
+                            </RadioButton.Tag>
+                        </RadioButton>
                         <RadioButton Command="{x:Bind NavCommand}" x:Uid="Settings" Content="Settings" GroupName="Nav" HorizontalAlignment="Stretch" Height="48">
                             <RadioButton.CommandParameter>
                                 <nav:NavType Type="views:SettingsPage" />
                             </RadioButton.CommandParameter>
                             <RadioButton.Tag>
-                                <FontIcon FontSize="18" Glyph="&#xE115;" />
+                                <FontIcon FontSize="18" Glyph="&#xE713;" />
                             </RadioButton.Tag>
                         </RadioButton>
                     </StackPanel>

@@ -10,6 +10,7 @@
 
 namespace EventsLookup.Helpers
 {
+    using GalaSoft.MvvmLight.Threading;
     using Windows.ApplicationModel.Resources;
 
     /// <summary>
@@ -20,20 +21,17 @@ namespace EventsLookup.Helpers
         private static ResourceLoader _resources = null;
         private static ResourceLoader _errors = null;
 
-        private static ResourceLoader Resources
-        {
-            get
-            {
-                return _resources ?? (_resources = ResourceLoader.GetForCurrentView("Resources"));
-            }
-        }
+        private static ResourceLoader Resources => _resources;
 
-        private static ResourceLoader Errors
+        private static ResourceLoader Errors => _errors;
+
+        /// <summary>
+        /// Initialize Loaders - Should be executed on a UI Thread.
+        /// </summary>
+        public static void Initialize()
         {
-            get
-            {
-                return _resources ?? (_resources = ResourceLoader.GetForCurrentView("Errors"));
-            }
+            _resources = ResourceLoader.GetForCurrentView("Resources");
+            _errors = ResourceLoader.GetForCurrentView("Errors");
         }
 
         /// <summary>

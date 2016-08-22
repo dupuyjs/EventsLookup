@@ -1,1 +1,1 @@
-C:\Users\JDUPUY\Documents\Github\EventsLookup\EventsLookup\EventsLookup\AppPackages\EventsLookup_1.1.1.0\EventsLookup_1.1.1.0_x86_x64_arm.appxbundle
+C:\Users\JDUPUY\Documents\Github\EventsLookup\EventsLookup\EventsLookup\AppPackages\Local\EventsLookup_1.1.7.0\EventsLookup_1.1.7.0_x86.appxbundle

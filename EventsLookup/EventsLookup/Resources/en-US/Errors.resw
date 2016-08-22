@@ -117,16 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Key.Caption" xml:space="preserve">
-    <value>Invalid Key</value>
-  </data>
-  <data name="Key.Message" xml:space="preserve">
-    <value>Please Update your meetup Key in Settings pane</value>
-  </data>
-  <data name="Network.Caption" xml:space="preserve">
-    <value>Network</value>
-  </data>
-  <data name="Network.Message" xml:space="preserve">
+  <data name="Network.Content" xml:space="preserve">
     <value>Oops. A network communication problem occured.</value>
+  </data>
+  <data name="Network.Title" xml:space="preserve">
+    <value>Network</value>
   </data>
 </root>

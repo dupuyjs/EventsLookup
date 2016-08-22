@@ -16,9 +16,9 @@
     <Page.Resources>
         <!-- CONVERTERS -->
         <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
+        <conv:CollectionToBoolConverter x:Key="CollectionToBoolConverter"/>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:StringFormatConverter x:Key="StringFormatConverter"/>
-        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <conv:IntegerConverter x:Key="IntegerConverter"/>
         <conv:FavoriteConverter x:Key="FavoriteConverter"/>
 
@@ -162,6 +162,7 @@
                             SelectedValue="{x:Bind Default.SelectedTopic, Mode=TwoWay, Converter={StaticResource IntegerConverter}}" 
                             Header="Topic"
                             HorizontalAlignment="Stretch"
+                            IsEnabled="{x:Bind Default.Topics, Mode=OneWay, Converter={StaticResource CollectionToBoolConverter}}"
                             Margin="12,4"/>
                         <Button x:Name="btnSubmit" 
                             Grid.Row="3"
@@ -174,7 +175,7 @@
                     </StackPanel>
                 </Grid>
                 <CommandBar Grid.Row="1">
-                    <AppBarButton Icon="Find" Click="OnAddTopic"/>
+                    <AppBarButton Icon="Find" Label="Search" Click="OnAddTopic"/>
                 </CommandBar>
             </Grid>
 
@@ -499,8 +500,10 @@
                     </ItemsControl.ItemsPanel>
                 </ListView>
                 <CommandBar Grid.Row="2">
-                    <AppBarButton x:Name="switchButton" Icon="Calendar" Click="SwitchView"/>
-                    <AppBarButton Icon="Download" Click="{x:Bind Default.OnExport}"/>
+                    <AppBarButton x:Name="favoriteButton" Icon="{x:Bind Default.FavoriteIcon, Mode=OneWay}" Label="Favorite" Click="Default.OnAddRemoveFavorite"/>
+                    <AppBarSeparator/>
+                    <AppBarButton x:Name="switchButton" Icon="Calendar" Label="View"  Click="SwitchView"/>
+                    <AppBarButton Icon="OpenFile" Label="Download" Click="{x:Bind Default.OnExport}"/>
                 </CommandBar>
             </Grid>
             <!-- MEETUP USER DATA -->

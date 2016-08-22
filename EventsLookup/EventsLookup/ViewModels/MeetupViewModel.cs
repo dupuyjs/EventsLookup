@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -12,7 +14,6 @@
     using MeetupLibrary;
     using MeetupLibrary.Models;
     using Microsoft.Practices.ServiceLocation;
-    using Windows.ApplicationModel.Resources;
     using Windows.Storage;
     using Windows.Storage.Pickers;
     using Windows.UI.Xaml;
@@ -32,7 +33,7 @@
         private List<City> _cities = null;
         private List<Category> _categories = null;
         private List<Topic> _topics = null;
-        private List<Favorite> _favorites = null;
+        private ObservableCollection<Favorite> _favorites = null;
         private Dictionary<string, string> _ordering = null;
         private string _selectedCity = string.Empty;
         private int _selectedCategory = default(int);
@@ -42,12 +43,15 @@
         private int _groupsCount = default(int);
         private string _keywords = "android";
         private Dictionary<int, List<Event>> _cacheManager = null;
+        private IconElement _favoriteIcon = new SymbolIcon(Symbol.UnFavorite);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeetupViewModel"/> class.
         /// </summary>
         public MeetupViewModel()
         {
+            IsDataLoaded = false;
+            IsUserAuthenticated = false;
         }
 
         #region Properties
@@ -65,7 +69,7 @@
                 }
                 else
                 {
-                    return _meetupProxy = MeetupClientFactory.CreateMeetupClient(Keys.MeetupApiKey);
+                    return _meetupProxy = MeetupClientFactory.CreateMeetupClient();
                 }
             }
         }
@@ -74,6 +78,11 @@
         /// Gets or sets a value indicating whether data is loaded.
         /// </summary>
         public bool IsDataLoaded { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether user is authenticated.
+        /// </summary>
+        public bool IsUserAuthenticated { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether data is loading.
@@ -281,7 +290,6 @@
             }
         }
 
-
         /// <summary>
         /// Gets or sets selected ordering option.
         /// </summary>
@@ -351,7 +359,7 @@
         /// <summary>
         /// Gets or sets favorites.
         /// </summary>
-        public List<Favorite> Favorites
+        public ObservableCollection<Favorite> Favorites
         {
             get
             {
@@ -386,6 +394,34 @@
                     DispatcherHelper.CheckBeginInvokeOnUI(() =>
                     {
                         RaisePropertyChanged(() => SelectedFavorite);
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets temporary created Favorite
+        /// </summary>
+        public Favorite TemporaryFavorite { get; set; }
+
+        /// <summary>
+        /// Gets or sets Favorite Icon
+        /// </summary>
+        public IconElement FavoriteIcon
+        {
+            get
+            {
+                return _favoriteIcon;
+            }
+
+            set
+            {
+                if (_favoriteIcon != value)
+                {
+                    _favoriteIcon = value;
+                    DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                    {
+                        RaisePropertyChanged(() => FavoriteIcon);
                     });
                 }
             }
@@ -447,7 +483,7 @@
         #region Caching
 
         /// <summary>
-        /// Cache Manager
+        /// Gets or sets the Cache Manager.
         /// </summary>
         public Dictionary<int, List<Event>> CacheManager
         {
@@ -466,39 +502,14 @@
 
         #region Initialization
 
-        public bool IsValidOAuthKey()
-        {
-            if (Keys.MeetupApiKey.Equals("YourApiKey"))
-            {
-                Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                string key = (string)localSettings.Values["MeetupApiKey"];
-
-                if (key == null || key.Equals("YourApiKey"))
-                {
-                    return false;
-                }
-                else
-                {
-                    Keys.MeetupApiKey = key;
-                }
-            }
-
-            return true;
-        }
-
+        /// <summary>
+        /// Initialize default data.
+        /// </summary>
+        /// <returns>Void.</returns>
         public async Task Initialize()
         {
-            if (!IsValidOAuthKey())
-            {
-                var loader = ResourceLoader.GetForCurrentView("Errors");
-                DialogService.DisplayError(loader.GetString("Key/Message"), loader.GetString("Key/Caption"), "");
-                //return false;
-            }
-
             try
             {
-                //DialogService.DisplayError(ResourceHelper.GetErrorString("Key/Message"), ResourceHelper.GetErrorString("Key /Caption"), "");
-
                 Favorites = Favorite.GetDefaultFavorites();
 
                 var member = await MeetupProxy.GetUserProfileAsync();
@@ -516,44 +527,34 @@
                 var ordering = MeetupLibrary.Models.Ordering.GetItems();
                 Ordering = ordering;
 
-                SelectedCity = "meetup1";
+                SelectedCity = Cities.First().Zip;
                 SelectedCategory = 34;
                 SelectedOrdering = OrderingEnum.MostActive.ToFriendlyString();
 
-                this.SelectedFavorite = this.Favorites.First();
+                SelectedFavorite = this.Favorites.First();
             }
             catch (Exception)
             {
-                DialogService.DisplayError(ResourceHelper.GetErrorString("Key/Message"), ResourceHelper.GetErrorString("Key /Caption"), "");
-            }
-
-            IsDataLoaded = true;
-            //return true;
-        }
-
-        #endregion
-
-        #region Get Topics
-
-        public async void OnKeywordsQuery(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            try
-            {
-                var topics = await MeetupProxy.GetTopicsAsync(Keywords);
-                this.Topics = topics;
-                this.SelectedTopic = topics.First().Id;
-            }
-            catch (Exception)
-            {
-                var loader = new ResourceLoader("Errors");
-                DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
+                DialogService.DisplayError(ResourceHelper.GetErrorString("Network/Title"), ResourceHelper.GetErrorString("Network/Content"), string.Empty);
             }
         }
 
         #endregion
 
+        /// <summary>
+        /// Main loading method. Gets group and events from Meetup API platform.
+        /// </summary>
+        /// <param name="topicId">The topic ID.</param>
+        /// <param name="zip">The zip code.</param>
+        /// <param name="categoryId">The category ID.</param>
+        /// <param name="upcomingOnly">Filter groups with upcoming events only.</param>
+        /// <param name="ordering">Ordering enumeration.</param>
+        /// <returns>Boolean Value. True if load completed succesfully.</returns>
         public async Task<bool> GetGroups(int topicId, string zip, int categoryId, bool upcomingOnly, OrderingEnum ordering)
         {
+            bool isOperationCompleted = false;
+            IsLoading = true;
+
             try
             {
                 List<Event> meetups = new List<Event>();
@@ -561,8 +562,6 @@
 
                 Groups = groups.Results;
                 GroupsCount = groups.TotalCount;
-
-                //IsGroupsEmpty = (GroupsCount == 0) ? true : false;
 
                 foreach (var item in Groups)
                 {
@@ -579,7 +578,8 @@
                         }
                         else
                         {
-                            events = (await MeetupProxy.GetEventsAsync(item.Id)).Results;
+                            var response = await MeetupProxy.GetEventsAsync(item.Id);
+                            events = response.Results;
                             CacheManager.Add(item.Id, events);
                         }
 
@@ -595,42 +595,96 @@
                             select g;
 
                 this.Meetups = query;
+
+                isOperationCompleted = true;
             }
             catch (Exception)
             {
-                var loader = new ResourceLoader("Errors");
-                DialogService.DisplayError(loader.GetString("Network/Caption"), loader.GetString("Network/Message"), "");
+                DialogService.DisplayError(ResourceHelper.GetErrorString("Network/Title"), ResourceHelper.GetErrorString("Network/Content"), string.Empty);
             }
 
-            return true;
+            IsDataLoaded = true;
+            IsLoading = false;
+
+            return isOperationCompleted;
         }
 
+        /// <summary>
+        /// Event Handler - Query Topics when Keywords added.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="args">Arguments.</param>
+        public async void OnKeywordsQuery(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            try
+            {
+                var topics = await MeetupProxy.GetTopicsAsync(Keywords);
+                Topics = topics;
+                SelectedTopic = topics.First().Id;
+            }
+            catch (Exception)
+            {
+                DialogService.DisplayError(ResourceHelper.GetErrorString("Network/Title"), ResourceHelper.GetErrorString("Network/Content"), string.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Event Handler - Load Data when Favorite is selected.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="e">Arguments.</param>
         public async void OnFavoriteChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.IsLoading = true;
-
-            var favorite = this.SelectedFavorite;
-            var zip = this.SelectedCity;
-            var ordering = this.SelectedOrdering.ToOrdering();
+            var favorite = SelectedFavorite;
+            var zip = SelectedCity;
+            var ordering = SelectedOrdering.ToOrdering();
 
             if (favorite != null)
             {
+                TemporaryFavorite = null;
+                FavoriteIcon = new SymbolIcon(Symbol.UnFavorite);
                 await GetGroups(favorite.TopicId, zip, favorite.CategoryId, false, ordering);
             }
-
-            this.IsLoading = false;
         }
 
+        /// <summary>
+        /// Event Handler - Add or Remove Favorite.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="e">Arguments.</param>
+        public void OnAddRemoveFavorite(object sender, RoutedEventArgs e)
+        {
+            if (TemporaryFavorite == null && SelectedFavorite != null)
+            {
+                TemporaryFavorite = SelectedFavorite;
+                Favorites.Remove(SelectedFavorite);
+                FavoriteIcon = new SymbolIcon(Symbol.Favorite);
+            }
+            else
+            {
+                if (TemporaryFavorite != null)
+                {
+                    Favorites.AddSorted<Favorite>(TemporaryFavorite, Favorite.SortDisplayNameDescending());
+                    SelectedFavorite = TemporaryFavorite;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event Handler - Load Data when Filter (City or Ordering) is selected.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="e">Arguments.</param>
         public async void OnFilterChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (IsLoading)
+            if (!IsDataLoaded)
             {
                 return;
             }
 
-            var favorite = this.SelectedFavorite;
-            var zip = this.SelectedCity;
-            var ordering = this.SelectedOrdering.ToOrdering();
+            var favorite = SelectedFavorite;
+            var zip = SelectedCity;
+            var ordering = SelectedOrdering.ToOrdering();
 
             if (favorite != null)
             {
@@ -638,32 +692,51 @@
             }
         }
 
+        /// <summary>
+        /// Event Handler - Load Data when a specific Search is performed.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="e">Arguments.</param>
         public async void OnSubmit(object sender, RoutedEventArgs e)
         {
-            var category = this.SelectedCategory;
-            var zip = this.SelectedCity;
-            var ordering = this.SelectedOrdering.ToOrdering();
-            var topicId = this.SelectedTopic;
+            var category = SelectedCategory;
+            var zip = SelectedCity;
+            var ordering = SelectedOrdering.ToOrdering();
+            var topicId = SelectedTopic;
+
+            var query = from item in Topics
+                        where item.Id == topicId
+                        select item;
+
+            TemporaryFavorite = new Favorite(query.First().Name.ToUpper(), SelectedCategory, SelectedTopic);
+            FavoriteIcon = new SymbolIcon(Symbol.Favorite);
 
             await GetGroups(topicId, zip, category, false, ordering);
         }
 
+        /// <summary>
+        /// Event Handler - Exports Data to CSV format.
+        /// </summary>
+        /// <param name="sender">The sender control.</param>
+        /// <param name="e">Arguments.</param>
         public async void OnExport(object sender, RoutedEventArgs e)
         {
+            var delimiter = CultureInfo.CurrentCulture.TextInfo.ListSeparator[0];
+
             StringBuilder sb = new StringBuilder();
 
-            string line = $"Group Name;City;Meetup Name;Url;Registered;Date";
+            string line = $"Date{delimiter}Group Name{delimiter}Meetup Name{delimiter}Venue Name{delimiter}Venue City{delimiter}Event Url{delimiter}YesRsvpCount";
             sb.AppendLine(line);
 
-            foreach (var item in Groups)
+            foreach (var monthGroup in Meetups)
             {
-                if (item.AllEvents != null)
+                sb.AppendLine();
+                sb.AppendLine(string.Format("{0:MMMM yyyy}", monthGroup.Key).ToUpper());
+                sb.AppendLine();
+                foreach (var meetup in monthGroup)
                 {
-                    foreach (var meetup in item.AllEvents)
-                    {
-                        line = $"{item?.Name};{item?.City};{meetup?.Name};{meetup?.EventUrl};{meetup?.YesRsvpCount};{meetup?.Time}";
-                        sb.AppendLine(line);
-                    }
+                    line = $"{string.Format("{0:d}", meetup?.Time)}{delimiter}{meetup?.Group?.Name.Replace(delimiter, '|')}{delimiter}{meetup?.Name.Replace(delimiter, '|')}{delimiter}{meetup?.Venue?.Name}{delimiter}{meetup?.Venue?.City}{delimiter}{meetup?.EventUrl}{delimiter}{meetup?.YesRsvpCount}";
+                    sb.AppendLine(line);
                 }
             }
 

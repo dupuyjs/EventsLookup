@@ -18,11 +18,10 @@ namespace MeetupLibrary
         /// <summary>
         /// Create The Meetup Platform client
         /// </summary>
-        /// <param name="apiKey">Echnoest API Key</param>
         /// <returns>Meetup client core object.</returns>
-        public static IMeetupClient CreateMeetupClient(string apiKey)
+        public static IMeetupClient CreateMeetupClient()
         {
-            return new MeetupClient(apiKey);
+            return new MeetupClient();
         }
     }
 }

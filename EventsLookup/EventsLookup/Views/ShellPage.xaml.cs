@@ -90,20 +90,32 @@ namespace EventsLookup.Views
             }
         }
 
-        void IDialogService.DisplayStatus(string message, string title, string buttonText)
+        /// <summary>
+        /// Display Status Message
+        /// </summary>
+        /// <param name="title">A message title.</param>
+        /// <param name="content">A message content.</param>
+        /// <param name="buttonText">Text displayed on button.</param>
+        void IDialogService.DisplayStatus(string title, string content, string buttonText)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(async () =>
             {
-                var dialog = new MessageDialog(message, title);
+                var dialog = new MessageDialog(content, title);
                 await dialog.ShowAsync();
             });
         }
 
-        void IDialogService.DisplayError(string errorMessage, string title, string buttonText)
+        /// <summary>
+        /// Display Error Message
+        /// </summary>
+        /// <param name="title">A message title.</param>
+        /// <param name="content">A message content.</param>
+        /// <param name="buttonText">Text displayed on button.</param>
+        void IDialogService.DisplayError(string title, string content, string buttonText)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(async () =>
             {
-                var dialog = new MessageDialog(errorMessage, title);
+                var dialog = new MessageDialog(content, title);
                 await dialog.ShowAsync();
             });
         }

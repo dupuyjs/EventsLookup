@@ -15,6 +15,7 @@ namespace MeetupLibrary
     using System.Threading.Tasks;
     using MeetupLibrary.Helpers;
     using MeetupLibrary.Models;
+    using OAuth;
 
     /// <summary>
     /// Core Meetup platform class. It exposes methods to call Meetup platform.
@@ -22,15 +23,12 @@ namespace MeetupLibrary
     public sealed class MeetupClient : SimpleServiceClient, IMeetupClient
     {
         private Uri _hostUri = new Uri("https://api.meetup.com");
-        private string _apikey;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeetupClient"/> class.
         /// </summary>
-        /// <param name="apiKey">Meetup oauth api key.</param>
-        internal MeetupClient(string apiKey)
+        internal MeetupClient()
         {
-            _apikey = apiKey;
         }
 
         /// <summary>
@@ -39,10 +37,11 @@ namespace MeetupLibrary
         /// <returns>A <see cref="CategoriesResponse"/> object.</returns>
         public async Task<CategoriesResponse> GetCategoriesAsync()
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
 
-            var template = new UriTemplate("/2/categories?key={apikey}&sign=true");
+            var template = new UriTemplate("/2/categories?access_token={token}");
 
             return await GetWithRetryAsync<CategoriesResponse>(_hostUri, template, parameters);
         }
@@ -74,8 +73,9 @@ namespace MeetupLibrary
         /// <returns>A <see cref="GroupsResponse"/> object.</returns>
         public async Task<GroupsResponse> GetGroupsAsync(int topicId, string zip, int? category, bool upcomingOnly, OrderingEnum ordering = OrderingEnum.MostActive, string country = "fr")
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
             parameters.Add("topicid", topicId.ToString());
 
             if (!string.IsNullOrWhiteSpace(zip))
@@ -96,7 +96,7 @@ namespace MeetupLibrary
             parameters.Add("upcomingonly", upcomingOnly.ToString());
             parameters.Add("ordering", ordering.ToFriendlyString());
 
-            var template = new UriTemplate("/find/groups?key={apikey}&radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=50&sign=true");
+            var template = new UriTemplate("/find/groups?radius=50&topic_id={topicid}&zip={zip}&category={category}&order={ordering}&upcoming_events={upcomingonly}&country={country}&page=50&access_token={token}");
 
             return await GetWithRetryAsync<GroupsResponse>(_hostUri, template, parameters);
         }
@@ -108,11 +108,12 @@ namespace MeetupLibrary
         /// <returns>An <see cref="EventsResponse"/> object.</returns>
         public async Task<EventsResponse> GetEventsAsync(int groupId)
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
             parameters.Add("groupId", groupId.ToString());
 
-            var template = new UriTemplate("/2/events?key={apikey}&group_id={groupId}&sign=true");
+            var template = new UriTemplate("/2/events?group_id={groupId}&access_token={token}");
 
             return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }
@@ -125,8 +126,9 @@ namespace MeetupLibrary
         /// <returns>List of <see cref="Topic"/> objects.</returns>
         public async Task<List<Topic>> GetTopicsAsync(string query, string lang = "en-US")
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
 
             if (!string.IsNullOrWhiteSpace(query))
             {
@@ -138,7 +140,7 @@ namespace MeetupLibrary
                 parameters.Add("lang", lang);
             }
 
-            var template = new UriTemplate("/recommended/group_topics?key={apikey}&text={query}&lang={lang}&sign=true");
+            var template = new UriTemplate("/recommended/group_topics?text={query}&lang={lang}&access_token={token}");
 
             return await GetWithRetryAsync<List<Topic>>(_hostUri, template, parameters);
         }
@@ -149,10 +151,11 @@ namespace MeetupLibrary
         /// <returns><see cref="Member"/> object.</returns>
         public async Task<Member> GetUserProfileAsync()
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
 
-            var template = new UriTemplate("/2/member/self?key={apikey}");
+            var template = new UriTemplate("/2/member/self?access_token={token}");
 
             return await GetWithRetryAsync<Member>(_hostUri, template, parameters);
         }
@@ -164,11 +167,12 @@ namespace MeetupLibrary
         /// <returns>An <see cref="EventsResponse"/> object.</returns>
         public async Task<EventsResponse> GetUserCalendarAsync(int memberId)
         {
+            var accessToken = await MeetupOAuthService.Instance.GetAccessToken();
             var parameters = new Dictionary<string, string>();
-            parameters.Add("apikey", _apikey);
+            parameters.Add("token", accessToken);
             parameters.Add("memberId", memberId.ToString());
 
-            var template = new UriTemplate("/2/events?key={apikey}&member_id={memberId}&rsvp=yes,maybe,waitlist&sign=true");
+            var template = new UriTemplate("/2/events?member_id={memberId}&rsvp=yes,maybe,waitlist&access_token={token}");
 
             return await GetWithRetryAsync<EventsResponse>(_hostUri, template, parameters);
         }

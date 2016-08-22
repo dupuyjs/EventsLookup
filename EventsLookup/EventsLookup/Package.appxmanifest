@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="35191Jean-SbastienDupuy.EventsLookup" Publisher="CN=3E5E1679-670B-4833-B024-745A6E0A0081" Version="1.1.5.0" />
+  <Identity Name="35191Jean-SbastienDupuy.EventsLookup" Publisher="CN=3E5E1679-670B-4833-B024-745A6E0A0081" Version="1.1.7.0" />
   <mp:PhoneIdentity PhoneProductId="3581490a-fc30-473f-96f7-42d00bf5ea30" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Events Lookup</DisplayName>
